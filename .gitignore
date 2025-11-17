@@ -1,0 +1,120 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# PyTorch / ML
+*.pth
+*.pt
+*.ckpt
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+
+# Data files (large datasets)
+# Ignore images but keep labels.csv for reference
+data/images/
+data/*.h5
+data/*.hdf5
+data/*.npy
+data/*.npz
+data/entropy_full/
+
+# Results and outputs
+results/
+outputs/
+logs/
+checkpoints/
+*.log
+
+# CSV files (ignore generated splits and results, but keep labels.csv)
+*.csv
+!data/labels.csv
+!requirements.txt
+
+# TensorBoard
+runs/
+events.out.tfevents.*
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Splits (generated files - can be regenerated)
+splits/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# Model weights and checkpoints (large files)
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# Training outputs
+training_log.txt
+history.csv
+
+# JSON config files (optional - uncomment if you want to ignore)
+# *.json
+
+# Keep empty directories (optional - create .gitkeep files if needed)
+# !splits/.gitkeep
+data/*
+
