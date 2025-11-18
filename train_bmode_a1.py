@@ -9,8 +9,14 @@ Usage:
     python train_bmode_a1.py --model_type attention # A2: Attention pooling
 """
 
+import os
+# Set CuBLAS workspace config for deterministic behavior (must be before torch import)
+os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+
 import argparse
+import copy
 import logging
+import random
 from pathlib import Path
 from typing import List, Tuple
 
@@ -18,7 +24,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, train_test_split
 from torch.utils.data import DataLoader
 
 from data.clinical_data import ClinicalConfig, load_clinical_table
@@ -35,6 +41,18 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+
+def set_global_seed(seed: int = 42) -> None:
+    """Set seeds for Python, NumPy, and PyTorch for reproducibility."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.use_deterministic_algorithms(True)
+
 
 def parse_args():
     """Parse command line arguments."""
@@ -97,6 +115,23 @@ def parse_args():
         default=128,
         help='Hidden dimension for attention network (only for attention model). Default: 128'
     )
+    parser.add_argument(
+        '--seed',
+        type=int,
+        default=42,
+        help='Random seed for reproducibility. Default: 42'
+    )
+    parser.add_argument(
+        '--no_cv',
+        action='store_true',
+        help='Disable cross-validation and use a single train/val split (80/20). Default: False (use 5-fold CV)'
+    )
+    parser.add_argument(
+        '--val_split',
+        type=float,
+        default=0.2,
+        help='Validation split ratio when --no_cv is used. Default: 0.2 (20%%)'
+    )
     
     return parser.parse_args()
 
@@ -132,6 +167,9 @@ def get_config(args):
         'num_workers': args.num_workers,
         'model_type': args.model_type,
         'attention_hidden': args.attention_hidden,
+        'seed': args.seed,
+        'no_cv': args.no_cv,
+        'val_split': args.val_split,
     }
     
     return config
@@ -379,7 +417,7 @@ def train_fold(
         if val_auc > best_val_auc + config['early_stopping_min_delta']:
             best_val_auc = val_auc
             patience_counter = 0
-            best_model_state = model.state_dict().copy()
+            best_model_state = copy.deepcopy(model.state_dict())
             logger.info(f"  → New best validation AUC: {best_val_auc:.4f}")
         else:
             patience_counter += 1
@@ -418,15 +456,21 @@ def train_fold(
 
 
 def main():
-    """Main training function with 5-fold cross-validation."""
+    """Main training function with optional cross-validation."""
     # Parse command line arguments
     args = parse_args()
     config = get_config(args)
+
+    # Ensure reproducibility
+    set_global_seed(config['seed'])
     
     # Determine model name
     model_name = "A1 (Mean Pooling)" if config['model_type'] == 'mean' else "A2 (Attention Pooling)"
     
-    logger.info(f"Starting 5-fold cross-validation training for {model_name}")
+    if config['no_cv']:
+        logger.info(f"Starting single train/val split training for {model_name}")
+    else:
+        logger.info(f"Starting 5-fold cross-validation training for {model_name}")
     logger.info(f"Configuration:")
     for key, value in config.items():
         logger.info(f"  {key}: {value}")
@@ -454,41 +498,71 @@ def main():
     )
     logger.info(f"Created {len(patient_records)} patient records")
     
-    # Prepare for stratified K-fold
+    # Prepare for splitting
     labels = np.array([r.label_binary for r in patient_records])
     patient_indices = np.arange(len(patient_records))
     
-    # Stratified 5-fold CV with train/val split
-    # For each fold: use 4 folds for train, 1 fold for val
-    # This gives: 80% train, 20% val per fold
-    skf = StratifiedKFold(n_splits=config['n_folds'], shuffle=True, random_state=42)
-    folds = list(skf.split(patient_indices, labels))
-    
-    val_aucs = []
-    
-    for fold in range(config['n_folds']):
-        # Get train and val indices for this fold
-        train_idx = folds[fold][0]
-        val_idx = folds[fold][1]
+    if config['no_cv']:
+        # Single train/val split
+        train_idx, val_idx = train_test_split(
+            patient_indices,
+            test_size=config['val_split'],
+            stratify=labels,
+            random_state=config['seed']
+        )
         
         # Split records
         train_records, val_records = split_patients_stratified(
             patient_records, train_idx, val_idx
         )
         
-        # Train fold
-        val_auc = train_fold(fold, train_records, val_records, config)
-        val_aucs.append(val_auc)
-    
-    # Print results
-    logger.info(f"\n{'='*70}")
-    logger.info(f"Cross-Validation Results - {model_name}")
-    logger.info(f"{'='*70}")
-    logger.info(f"Model: {model_name}")
-    logger.info(f"Backbone: {config['backbone']}")
-    logger.info(f"Val AUCs: {[f'{auc:.4f}' for auc in val_aucs]}")
-    logger.info(f"Mean Val AUC: {np.mean(val_aucs):.4f} ± {np.std(val_aucs):.4f}")
-    logger.info(f"{'='*70}")
+        logger.info(f"\nTrain/Val Split:")
+        logger.info(f"  Train: {len(train_records)} patients ({len(train_records)/len(patient_records)*100:.1f}%)")
+        logger.info(f"  Val:   {len(val_records)} patients ({len(val_records)/len(patient_records)*100:.1f}%)")
+        
+        # Train single model
+        val_auc = train_fold(0, train_records, val_records, config)
+        
+        # Print results
+        logger.info(f"\n{'='*70}")
+        logger.info(f"Training Results - {model_name}")
+        logger.info(f"{'='*70}")
+        logger.info(f"Model: {model_name}")
+        logger.info(f"Backbone: {config['backbone']}")
+        logger.info(f"Val AUC: {val_auc:.4f}")
+        logger.info(f"{'='*70}")
+    else:
+        # Stratified 5-fold CV with train/val split
+        # For each fold: use 4 folds for train, 1 fold for val
+        # This gives: 80% train, 20% val per fold
+        skf = StratifiedKFold(n_splits=config['n_folds'], shuffle=True, random_state=config['seed'])
+        folds = list(skf.split(patient_indices, labels))
+        
+        val_aucs = []
+        
+        for fold in range(config['n_folds']):
+            # Get train and val indices for this fold
+            train_idx = folds[fold][0]
+            val_idx = folds[fold][1]
+            
+            # Split records
+            train_records, val_records = split_patients_stratified(
+                patient_records, train_idx, val_idx
+            )
+            
+            # Train fold
+            val_auc = train_fold(fold, train_records, val_records, config)
+            val_aucs.append(val_auc)
+        
+        # Print results
+        logger.info(f"\n{'='*70}")
+        logger.info(f"Cross-Validation Results - {model_name}")
+        logger.info(f"{'='*70}")
+        logger.info(f"Model: {model_name}")
+        logger.info(f"Backbone: {config['backbone']}")
+        logger.info(f"Val AUCs: {[f'{auc:.4f}' for auc in val_aucs]}")
+        logger.info(f"Mean Val AUC: {np.mean(val_aucs):.4f} ± {np.std(val_aucs):.4f}")
+        logger.info(f"{'='*70}")
 
 
 if __name__ == "__main__":
