@@ -1,29 +1,59 @@
+# Activate ENV
+```bash
+conda activate qus
+```
 # Train A1: Mean pooling model
-python train_bmode_a1.py --model_type mean
-
+```bash
+python train.py --model_type mean --backbone efficientnetv2_b2 --no_cv --learning_rate 1e-3
+```
 # Train A2: Attention pooling model
-python train_bmode_a1.py --model_type attention
-
-# Train A2 with custom attention hidden dimension
-python train_bmode_a1.py --model_type attention --attention_hidden 256
-
-# Train A1 with ResNet34 backbone
-python train_bmode_a1.py --model_type mean --backbone resnet34
-
-# Train A2 with custom batch size and learning rate
-python train_bmode_a1.py --model_type attention --batch_size 16 --learning_rate 5e-5
-
+```bash
+python train.py --model_type attention --backbone efficientnetv2_b2 --no_cv --learning_rate 4e-4
+```
 # Train C1: Mean pooling
-python train_bmode_clinical.py --pooling mean --backbone resnet18
-
+```bash
+python train_clinical.py --pooling mean --backbone efficientnetv2_b2 --no_cv --learning_rate 1e-3
+```
 # Train C2: Attention pooling
-python train_bmode_clinical.py --pooling attention --backbone resnet18
+```bash
+python train_clinical.py --pooling attention --backbone efficientnetv2_b2 --no_cv --learning_rate 2e-4
+```
+# Train: dual stream
+```bash
+python train_dual_stream.py \
+    --model_type mean \
+    --backbone_bmode efficientnetv2_b0 \
+    --backbone_nakagami efficientnetv2_b0 \
+    --learning_rate 1e-5 \
+    --no_cv
+```
+# Train: dual stream + clinical 
 
-# Train C1 with custom hyperparameters
-python train_bmode_clinical.py \
+```bash
+python train_dual_stream_clinical.py \
     --pooling mean \
-    --backbone resnet34 \
-    --batch_size 8 \
-    --learning_rate 5e-5 \
-    --clinical_dim 64 \
-    --fusion_hidden 256
+    --backbone_bmode efficientnetv2_b0 \
+    --backbone_nakagami efficientnetv2_b0 \
+    --learning_rate 1e-5 \
+    --no_cv
+```
+
+# Cosine scheduler (mặc định)
+```bash
+python train_clinical_scheduler.py --pooling mean --scheduler cosine
+```
+
+# Plateau scheduler
+```bash
+python train_clinical_scheduler.py --pooling mean --scheduler plateau --scheduler_patience 5
+```
+
+# Step scheduler
+```bash
+python train_clinical_scheduler.py --pooling mean --scheduler step --scheduler_step_size 10
+```
+
+# Không dùng scheduler
+```bash
+python train_clinical_scheduler.py --pooling mean --scheduler none
+```

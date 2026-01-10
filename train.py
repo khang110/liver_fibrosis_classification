@@ -1,12 +1,12 @@
-"""Training script for C1/C2: B-mode CNN + Clinical Fusion.
+"""Training script for A1/A2: B-mode CNN + Mean/Attention Pooling.
 
-This script implements 5-fold cross-validation training for the B-mode + clinical
-fusion models (C1: mean pooling, C2: attention pooling) with early stopping
-based on validation AUC.
+This script implements 5-fold cross-validation training for the B-mode image
+classification models (A1: mean pooling, A2: attention pooling) with early
+stopping based on validation AUC.
 
 Usage:
-    python train_bmode_clinical.py --pooling mean      # C1: Mean pooling
-    python train_bmode_clinical.py --pooling attention # C2: Attention pooling
+    python train_bmode_a1.py --model_type mean      # A1: Mean pooling
+    python train_bmode_a1.py --model_type attention # A2: Attention pooling
 """
 
 import os
@@ -22,7 +22,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-import pandas as pd
 import torch
 import torch.nn as nn
 from sklearn.metrics import (
@@ -38,19 +37,24 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 import matplotlib.pyplot as plt
 
-from data.clinical_data import (
-    ClinicalConfig,
-    ClinicalPreprocessor,
-    load_clinical_table,
-)
+from data.clinical_data import ClinicalConfig, load_clinical_table
 from data.datasets import BModePatientDataset, get_eval_transform, get_train_transform
 from data.image_index import PatientRecord, build_patient_records
-from models.bmode_models import create_bmode_clinical_fusion_model, load_backbone
+from models.bmode_models import (
+    create_bmode_attention_model,
+    create_bmode_mean_model,
+    load_backbone,
+)
 
+os.makedirs("logs", exist_ok=True)  # optional, create folder
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    format='%(message)s',
+    handlers=[
+        logging.FileHandler(f"logs/{datetime.now().strftime('%Y%m%d_%H%M%S')}_train.log", encoding="utf-8"),  # save to file
+        logging.StreamHandler()                                   # print to console
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -71,14 +75,14 @@ def set_global_seed(seed: int = 42) -> None:
 def parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Train B-mode + clinical fusion models (C1: mean pooling, C2: attention pooling)"
+        description="Train B-mode CNN models (A1: mean pooling, A2: attention pooling)"
     )
     parser.add_argument(
-        '--pooling',
+        '--model_type',
         type=str,
         choices=['mean', 'attention'],
         default='mean',
-        help='Pooling method: "mean" for C1 or "attention" for C2. Default: mean'
+        help='Model type: "mean" for A1 (mean pooling) or "attention" for A2 (attention pooling). Default: mean'
     )
     parser.add_argument(
         '--backbone',
@@ -91,7 +95,7 @@ def parse_args():
         '--batch_size',
         type=int,
         default=16,
-        help='Batch size for training. Default: 16'
+        help='Batch size for training. Default: 8'
     )
     parser.add_argument(
         '--learning_rate',
@@ -103,12 +107,12 @@ def parse_args():
         '--num_epochs',
         type=int,
         default=40,
-        help='Maximum number of epochs. Default: 40'
+        help='Maximum number of epochs. Default: 100'
     )
     parser.add_argument(
         '--early_stopping_patience',
         type=int,
-        default=12,
+        default=10,
         help='Early stopping patience. Default: 10'
     )
     parser.add_argument(
@@ -127,25 +131,7 @@ def parse_args():
         '--attention_hidden',
         type=int,
         default=128,
-        help='Hidden dimension for attention network (only for attention pooling). Default: 128'
-    )
-    parser.add_argument(
-        '--clinical_dim',
-        type=int,
-        default=32,
-        help='Output dimension for processed clinical features. Default: 32'
-    )
-    parser.add_argument(
-        '--fusion_hidden',
-        type=int,
-        default=128,
-        help='Hidden dimension for fusion MLP. Default: 128'
-    )
-    parser.add_argument(
-        '--dropout',
-        type=float,
-        default=0.5,
-        help='Dropout probability in fusion MLP. Default: 0.5'
+        help='Hidden dimension for attention network (only for attention model). Default: 128'
     )
     parser.add_argument(
         '--seed',
@@ -167,8 +153,8 @@ def parse_args():
     parser.add_argument(
         '--log_dir',
         type=str,
-        default='runs/bmode_clinical',
-        help='Root directory for TensorBoard logs. Default: runs/bmode_clinical'
+        default='runs/bmode',
+        help='Root directory for TensorBoard logs. Default: runs/bmode'
     )
     
     return parser.parse_args()
@@ -189,10 +175,10 @@ def get_config(args):
     
     config = {
         'clinical_csv': Path("data/annotations/175_clinical_5_variables.csv"),
-        'image_root': Path("data/bmode_full"),
+        'image_root': Path("data/nakagami_full"),
         'patient_id_column': "NO",
         'label_column': "CL_F2",
-        'image_pattern': "Bmode_image_*.png",
+        'image_pattern': "Nakagami_image_*.png",  #Nakagami_image_
         'n_folds': 5,
         'batch_size': args.batch_size,
         'learning_rate': args.learning_rate,
@@ -203,12 +189,8 @@ def get_config(args):
         'pretrained': True,
         'device': device,
         'num_workers': args.num_workers,
-        'pooling': args.pooling,
+        'model_type': args.model_type,
         'attention_hidden': args.attention_hidden,
-        'clinical_dim': args.clinical_dim,
-        'fusion_hidden': args.fusion_hidden,
-        'dropout': args.dropout,
-        'clinical_features': ["AST", "ALT", "PLT", "APRI", "FIB_4"],
         'seed': args.seed,
         'no_cv': args.no_cv,
         'val_split': args.val_split,
@@ -238,57 +220,13 @@ def split_patients_stratified(
     return train_records, val_records
 
 
-def build_clinical_feature_dict(
-    df: pd.DataFrame,
-    preprocessor: ClinicalPreprocessor,
-    patient_ids: List[str]
-) -> Dict[str, torch.Tensor]:
-    """Build a dictionary mapping patient_id to clinical feature tensor.
-    
-    Args:
-        df: Clinical DataFrame indexed by patient_id.
-        preprocessor: Fitted ClinicalPreprocessor.
-        patient_ids: List of patient IDs to extract features for.
-    
-    Returns:
-        Dictionary mapping patient_id (str) to clinical feature tensor.
-    """
-    clinical_dict = {}
-    
-    for pid in patient_ids:
-        # Convert to int if needed
-        try:
-            pid_int = int(pid)
-        except ValueError:
-            pid_int = pid
-        
-        # Get patient row
-        if pid_int in df.index:
-            patient_row = df.loc[[pid_int]]
-        elif pid in df.index:
-            patient_row = df.loc[[pid]]
-        else:
-            logger.warning(f"Patient {pid} not found in clinical DataFrame")
-            continue
-        
-        # Transform clinical features (only features, no label)
-        X, _, _ = preprocessor.transform(patient_row, label_column=None)
-        
-        # Convert to tensor
-        clinical_tensor = torch.from_numpy(X[0]).float()
-        clinical_dict[pid] = clinical_tensor
-    
-    return clinical_dict
-
-
 def train_epoch(
     model: nn.Module,
     dataloader: DataLoader,
     criterion: nn.Module,
     optimizer: torch.optim.Optimizer,
-    device: torch.device,
-    clinical_dict: Dict[str, torch.Tensor]
-) -> Tuple[float, float]:
+    device: torch.device
+) -> Tuple[float, float, Optional[float], Optional[BestThresholdMetrics]]:
     """Train for one epoch.
     
     Args:
@@ -297,33 +235,24 @@ def train_epoch(
         criterion: Loss function.
         optimizer: Optimizer.
         device: Device to run on.
-        clinical_dict: Dictionary mapping patient_id to clinical feature tensor.
     
     Returns:
-        Tuple of (average_loss, average_accuracy).
+        Tuple of (average_loss, average_accuracy, train_auc, train_threshold_metrics).
     """
     model.train()
     total_loss = 0.0
     correct = 0
     total = 0
+    all_logits: List[np.ndarray] = []
+    all_labels: List[np.ndarray] = []
     
-    for imgs, labels, patient_ids in dataloader:
+    for imgs, labels, _ in dataloader:
         imgs = imgs.to(device)
-        labels = labels.to(device)
-        
-        # Build clinical features batch
-        clinical_batch = []
-        for pid in patient_ids:
-            if pid in clinical_dict:
-                clinical_batch.append(clinical_dict[pid])
-            else:
-                raise ValueError(f"Patient {pid} not found in clinical_dict")
-        
-        clinical_features = torch.stack(clinical_batch).to(device)
+        labels = labels.to(device).long()
         
         # Forward pass
         optimizer.zero_grad()
-        logits = model(imgs, clinical_features)
+        logits = model(imgs)
         loss = criterion(logits, labels)
         
         # Backward pass
@@ -332,13 +261,27 @@ def train_epoch(
         
         # Statistics
         total_loss += loss.item()
-        predictions = (torch.sigmoid(logits) > 0.5).float()
-        correct += (predictions == labels).sum().item()
+        preds = torch.argmax(logits, dim=1)
+        correct += (preds == labels).sum().item()
         total += labels.size(0)
+        all_logits.append(logits.detach().cpu().numpy())
+        all_labels.append(labels.detach().cpu().numpy())
     
     avg_loss = total_loss / len(dataloader)
     avg_acc = correct / total if total > 0 else 0.0
-    return avg_loss, avg_acc
+    train_auc = None
+    train_threshold_metrics = None
+    if all_labels:
+        logits_concat = np.concatenate(all_logits)
+        labels_concat = np.concatenate(all_labels)
+        try:
+            probabilities = torch.softmax(torch.from_numpy(logits_concat), dim=1).numpy()[:, 1]
+            train_auc = float(roc_auc_score(labels_concat, probabilities))
+            train_threshold_metrics = find_best_threshold(probabilities, labels_concat)
+        except ValueError:
+            train_auc = None
+            train_threshold_metrics = None
+    return avg_loss, avg_acc, train_auc, train_threshold_metrics
 
 
 def evaluate(
@@ -346,7 +289,6 @@ def evaluate(
     dataloader: DataLoader,
     criterion: nn.Module,
     device: torch.device,
-    clinical_dict: Dict[str, torch.Tensor],
     return_confusion: bool = False
 ) -> Tuple[float, float, float, Optional[np.ndarray], Optional[BestThresholdMetrics]]:
     """Evaluate model on a dataset.
@@ -356,7 +298,7 @@ def evaluate(
         dataloader: Data loader.
         criterion: Loss function.
         device: Device to run on.
-        clinical_dict: Dictionary mapping patient_id to clinical feature tensor.
+        return_confusion: Whether to return confusion matrix. Default: False.
     
     Returns:
         Tuple of (average_loss, average_accuracy, auc_score, confusion_matrix?, best_threshold_metrics).
@@ -367,45 +309,33 @@ def evaluate(
     total = 0
     all_logits = []
     all_labels = []
-    all_predictions = []
     
     with torch.no_grad():
-        for imgs, labels, patient_ids in dataloader:
+        for imgs, labels, _ in dataloader:
             imgs = imgs.to(device)
-            labels = labels.to(device)
-            
-            # Build clinical features batch
-            clinical_batch = []
-            for pid in patient_ids:
-                if pid in clinical_dict:
-                    clinical_batch.append(clinical_dict[pid])
-                else:
-                    raise ValueError(f"Patient {pid} not found in clinical_dict")
-            
-            clinical_features = torch.stack(clinical_batch).to(device)
+            labels = labels.to(device).long()
             
             # Forward pass
-            logits = model(imgs, clinical_features)
+            logits = model(imgs)
             loss = criterion(logits, labels)
             
             # Statistics
             total_loss += loss.item()
-            predictions = (torch.sigmoid(logits) > 0.5).float()
+            predictions = torch.argmax(logits, dim=1)
             correct += (predictions == labels).sum().item()
             total += labels.size(0)
             
             # Store for AUC calculation
             all_logits.append(logits.cpu().numpy())
             all_labels.append(labels.cpu().numpy())
-            all_predictions.append(predictions.cpu().numpy())
     
     avg_loss = total_loss / len(dataloader)
     avg_acc = correct / total if total > 0 else 0.0
     
-    # Calculate AUC
-    all_logits = np.concatenate(all_logits)
-    all_labels = np.concatenate(all_labels)
-    probabilities = torch.sigmoid(torch.from_numpy(all_logits)).numpy()
+    # Calculate AUC using positive-class probability
+    all_logits = np.concatenate(all_logits)  # (N, 2)
+    all_labels = np.concatenate(all_labels)  # (N,)
+    probabilities = torch.softmax(torch.from_numpy(all_logits), dim=1).numpy()[:, 1]
     auc = roc_auc_score(all_labels, probabilities)
     best_threshold_metrics = find_best_threshold(probabilities, all_labels)
     confusion = None
@@ -440,12 +370,33 @@ def find_best_threshold(
             recall = recall_score(labels, preds, zero_division=0)
             f1 = f1_score(labels, preds, zero_division=0)
             conf = confusion_matrix(labels, preds, labels=[0, 1])
+            
+            # Calculate Sensitivity (Recall), Specificity, PPV (Precision), NPV
+            # Confusion matrix: [[TN, FP], [FN, TP]]
+            tn, fp, fn, tp = conf.ravel()
+            
+            # Sensitivity (Recall) = TP / (TP + FN)
+            sensitivity = recall  # Same as recall
+            
+            # Specificity = TN / (TN + FP)
+            specificity = float(tn / (tn + fp)) if (tn + fp) > 0 else 0.0
+            
+            # PPV (Positive Predictive Value) = Precision = TP / (TP + FP)
+            ppv = precision  # Same as precision
+            
+            # NPV (Negative Predictive Value) = TN / (TN + FN)
+            npv = float(tn / (tn + fn)) if (tn + fn) > 0 else 0.0
+            
             best_metrics = {
                 'threshold': float(thr),
                 'balanced_accuracy': float(balanced_acc),
                 'accuracy': float(acc),
                 'precision': float(precision),
                 'recall': float(recall),
+                'sensitivity': float(sensitivity),
+                'specificity': float(specificity),
+                'ppv': float(ppv),
+                'npv': float(npv),
                 'f1': float(f1),
                 'confusion_matrix': conf,
             }
@@ -453,22 +404,30 @@ def find_best_threshold(
     return best_metrics
 
 
-def log_best_threshold_metrics(metrics: BestThresholdMetrics) -> None:
+def log_best_threshold_metrics(metrics: BestThresholdMetrics, prefix: str = "") -> None:
     """Log detailed information about the best decision threshold."""
+    prefix_str = f"{prefix} " if prefix else ""
     logger.info(
-        "Best Threshold: %.2f | Balanced Acc: %.4f | Acc: %.4f | "
-        "Precision: %.4f | Recall: %.4f | F1: %.4f",
+        "%sBest Threshold: %.2f | Balanced Acc: %.4f | Acc: %.4f | "
+        "Precision: %.4f | Recall: %.4f | Sensitivity: %.4f | Specificity: %.4f | "
+        "PPV: %.4f | NPV: %.4f | F1: %.4f",
+        prefix_str,
         metrics['threshold'],
         metrics['balanced_accuracy'],
         metrics['accuracy'],
         metrics['precision'],
         metrics['recall'],
+        metrics['sensitivity'],
+        metrics['specificity'],
+        metrics['ppv'],
+        metrics['npv'],
         metrics['f1'],
     )
     confusion = metrics.get('confusion_matrix')
     if confusion is not None:
         logger.info(
-            "Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):\n%s",
+            "%sConfusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):\n%s",
+            prefix_str,
             confusion
         )
 
@@ -476,15 +435,20 @@ def log_best_threshold_metrics(metrics: BestThresholdMetrics) -> None:
 def log_best_threshold_scalars(
     writer: SummaryWriter,
     metrics: BestThresholdMetrics,
-    global_step: int
+    global_step: int,
+    prefix: str = 'val'
 ) -> None:
     """Write best-threshold metrics to TensorBoard."""
-    writer.add_scalar('BestThreshold/value', metrics['threshold'], global_step)
-    writer.add_scalar('BalancedAccuracy/val_best', metrics['balanced_accuracy'], global_step)
-    writer.add_scalar('Accuracy/val_best', metrics['accuracy'], global_step)
-    writer.add_scalar('Precision/val_best', metrics['precision'], global_step)
-    writer.add_scalar('Recall/val_best', metrics['recall'], global_step)
-    writer.add_scalar('F1/val_best', metrics['f1'], global_step)
+    writer.add_scalar(f'BestThreshold/{prefix}', metrics['threshold'], global_step)
+    writer.add_scalar(f'BalancedAccuracy/{prefix}_best', metrics['balanced_accuracy'], global_step)
+    writer.add_scalar(f'Accuracy/{prefix}_best', metrics['accuracy'], global_step)
+    writer.add_scalar(f'Precision/{prefix}_best', metrics['precision'], global_step)
+    writer.add_scalar(f'Recall/{prefix}_best', metrics['recall'], global_step)
+    writer.add_scalar(f'Sensitivity/{prefix}_best', metrics['sensitivity'], global_step)
+    writer.add_scalar(f'Specificity/{prefix}_best', metrics['specificity'], global_step)
+    writer.add_scalar(f'PPV/{prefix}_best', metrics['ppv'], global_step)
+    writer.add_scalar(f'NPV/{prefix}_best', metrics['npv'], global_step)
+    writer.add_scalar(f'F1/{prefix}_best', metrics['f1'], global_step)
 
 
 def create_confusion_matrix_figure(
@@ -503,7 +467,7 @@ def create_confusion_matrix_figure(
         yticklabels=class_names,
         ylabel='Actual',
         xlabel='Predicted',
-        title='Validation Confusion Matrix'
+        title='Prediction'
     )
     
     thresh = matrix.max() / 2 if matrix.max() > 0 else 0.5
@@ -523,8 +487,6 @@ def train(
     fold: int,
     train_records: List[PatientRecord],
     val_records: List[PatientRecord],
-    train_df: pd.DataFrame,
-    val_df: pd.DataFrame,
     config: dict,
     writer: Optional[SummaryWriter] = None
 ) -> float:
@@ -534,8 +496,6 @@ def train(
         fold: Fold number (for logging).
         train_records: Training patient records.
         val_records: Validation patient records.
-        train_df: Training clinical DataFrame.
-        val_df: Validation clinical DataFrame.
         config: Configuration dictionary.
     
     Returns:
@@ -561,33 +521,6 @@ def train(
     logger.info(f"Train: {len(train_dataset)} patients")
     logger.info(f"Val: {len(val_dataset)} patients")
     
-    # Fit preprocessor on training data only (to avoid leakage)
-    logger.info("Fitting clinical preprocessor on training data...")
-    preprocessor = ClinicalPreprocessor(
-        numeric_features=config['clinical_features'],
-        categorical_features=[],
-    )
-    preprocessor.fit(train_df)
-    
-    # Build clinical feature dictionaries for each split
-    train_patient_ids = [r.patient_id for r in train_records]
-    val_patient_ids = [r.patient_id for r in val_records]
-    
-    train_clinical_dict = build_clinical_feature_dict(
-        train_df, preprocessor, train_patient_ids
-    )
-    val_clinical_dict = build_clinical_feature_dict(
-        val_df, preprocessor, val_patient_ids
-    )
-    
-    logger.info(f"Built clinical feature dictionaries: "
-                f"train={len(train_clinical_dict)}, "
-                f"val={len(val_clinical_dict)}")
-    
-    # Get clinical input dimension from preprocessor
-    clinical_input_dim = len(preprocessor.feature_names)
-    logger.info(f"Clinical input dimension: {clinical_input_dim}")
-    
     # Create data loaders
     train_loader = DataLoader(
         train_dataset,
@@ -604,43 +537,55 @@ def train(
         pin_memory=True if config['device'] == 'cuda' else False
     )
     
-    # Create model
+    # Create model based on model_type
     device = torch.device(config['device'])
-    # Auto-detect feature dimension from backbone to avoid warnings
-    _, backbone_feature_dim = load_backbone(config['backbone'], config['pretrained'])
-    logger.info(f"Backbone feature dimension: {backbone_feature_dim}")
+    model_type = config['model_type']
     
-    model = create_bmode_clinical_fusion_model(
-        backbone=config['backbone'],
-        pretrained=config['pretrained'],
-        feature_dim=backbone_feature_dim,  # Use correct dimension for backbone
-        clinical_dim=config['clinical_dim'],
-        fusion_hidden=config['fusion_hidden'],
-        pooling=config['pooling'],
-        attention_hidden=config['attention_hidden'],
-        dropout=config['dropout'],
-        clinical_input_dim=clinical_input_dim
-    ).to(device)
+    if model_type == 'mean':
+        # A1: Mean pooling model
+        model = create_bmode_mean_model(
+            backbone=config['backbone'],
+            pretrained=config['pretrained']
+        ).to(device)
+        logger.info(f"Created A1 model (mean pooling) with backbone {config['backbone']}")
+    elif model_type == 'attention':
+        # A2: Attention pooling model
+        # Detect backbone feature dimension to avoid mismatches (e.g., EfficientNetV2)
+        _, backbone_feature_dim = load_backbone(
+            backbone=config['backbone'],
+            pretrained=config['pretrained']
+        )
+        model = create_bmode_attention_model(
+            backbone=config['backbone'],
+            pretrained=config['pretrained'],
+            feature_dim=backbone_feature_dim,
+            attention_hidden=config['attention_hidden']
+        ).to(device)
+        logger.info(
+            f"Created A2 model (attention pooling) with backbone {config['backbone']}, "
+            f"attention_hidden={config['attention_hidden']}, feature_dim={backbone_feature_dim}"
+        )
+    else:
+        raise ValueError(f"Unknown model_type: {model_type}. Must be 'mean' or 'attention'.")
     
-    logger.info(
-        f"Created {config['pooling']} pooling model with backbone {config['backbone']}"
-    )
-    
-    # Calculate pos_weight for imbalanced dataset
+    # Calculate class weights for imbalanced dataset
     train_labels = [r.label_binary for r in train_records]
     pos_count = sum(train_labels)
     neg_count = len(train_labels) - pos_count
-    pos_weight = torch.tensor([neg_count / pos_count]).to(device) if pos_count > 0 else torch.tensor([1.0]).to(device)
+    if pos_count > 0:
+        class_weights = torch.tensor([1.0, neg_count / pos_count], dtype=torch.float32).to(device)
+    else:
+        class_weights = torch.tensor([1.0, 1.0], dtype=torch.float32).to(device)
     
-    # Loss and optimizer
-    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+    # Loss and optimizer (multi-class cross-entropy with class weights)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=config['learning_rate']
     )
     
     logger.info(f"Using device: {device}")
-    logger.info(f"Positive weight: {pos_weight.item():.4f}\n")
+    logger.info(f"Class weights: {class_weights.cpu().numpy().tolist()}")
     
     # Training loop with early stopping
     best_val_auc = 0.0
@@ -650,30 +595,46 @@ def train(
     
     for epoch in range(config['num_epochs']):
         # Train
-        train_loss, train_acc = train_epoch(
-            model, train_loader, criterion, optimizer, device, train_clinical_dict
+        train_loss, train_acc, train_auc, train_threshold_metrics = train_epoch(
+            model, train_loader, criterion, optimizer, device
         )
         
+        train_auc_str = f"{train_auc:.4f}" if train_auc is not None else "nan"
         # Validate
-        val_loss, val_acc, val_auc, _, best_threshold_metrics = evaluate(
-            model, val_loader, criterion, device, val_clinical_dict
+        val_loss, val_acc, val_auc, _, val_threshold_metrics = evaluate(
+            model, val_loader, criterion, device
         )
         
         logger.info(
             f"Epoch {epoch + 1}/{config['num_epochs']} - "
-            f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f} - "
+            f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}, "
+            f"Train AUC: {train_auc_str} - "
             f"Val Loss: {val_loss:.4f}, Val Acc (0.5): {val_acc:.4f}, Val AUC: {val_auc:.4f}"
         )
-        if best_threshold_metrics is not None:
+        if train_threshold_metrics is not None:
             logger.info(
-                f"  Best Threshold {best_threshold_metrics['threshold']:.2f} → "
-                f"Balanced Acc: {best_threshold_metrics['balanced_accuracy']:.4f}, "
-                f"Acc: {best_threshold_metrics['accuracy']:.4f}, "
-                f"Precision: {best_threshold_metrics['precision']:.4f}, "
-                f"Recall: {best_threshold_metrics['recall']:.4f}, "
-                f"F1: {best_threshold_metrics['f1']:.4f}"
+                f"  Train Best Threshold {train_threshold_metrics['threshold']:.2f} → "
+                f"Balanced Acc: {train_threshold_metrics['balanced_accuracy']:.4f}, "
+                f"Acc: {train_threshold_metrics['accuracy']:.4f}, "
+                f"Sensitivity: {train_threshold_metrics['sensitivity']:.4f}, "
+                f"Specificity: {train_threshold_metrics['specificity']:.4f}, "
+                f"PPV: {train_threshold_metrics['ppv']:.4f}, "
+                f"NPV: {train_threshold_metrics['npv']:.4f}, "
+                f"F1: {train_threshold_metrics['f1']:.4f}"
             )
-
+        if val_threshold_metrics is not None:
+            logger.info(
+                f"  Val Best Threshold {val_threshold_metrics['threshold']:.2f} → "
+                f"Balanced Acc: {val_threshold_metrics['balanced_accuracy']:.4f}, "
+                f"Acc: {val_threshold_metrics['accuracy']:.4f}, "
+                f"Sensitivity: {val_threshold_metrics['sensitivity']:.4f}, "
+                f"Specificity: {val_threshold_metrics['specificity']:.4f}, "
+                f"PPV: {val_threshold_metrics['ppv']:.4f}, "
+                f"NPV: {val_threshold_metrics['npv']:.4f}, "
+                f"F1: {val_threshold_metrics['f1']:.4f}"
+            )
+        
+        # Log to TensorBoard
         if writer is not None:
             step = epoch + 1
             writer.add_scalar('Loss/train', train_loss, step)
@@ -681,13 +642,12 @@ def train(
             writer.add_scalar('Accuracy/train', train_acc, step)
             writer.add_scalar('Accuracy/val_threshold_0.5', val_acc, step)
             writer.add_scalar('AUC/val', val_auc, step)
-            if best_threshold_metrics is not None:
-                writer.add_scalar('Accuracy/val_best', best_threshold_metrics['accuracy'], step)
-                writer.add_scalar('BalancedAccuracy/val_best', best_threshold_metrics['balanced_accuracy'], step)
-                writer.add_scalar('Recall/val_best', best_threshold_metrics['recall'], step)
-                writer.add_scalar('Precision/val_best', best_threshold_metrics['precision'], step)
-                writer.add_scalar('F1/val_best', best_threshold_metrics['f1'], step)
-                writer.add_scalar('BestThreshold/value', best_threshold_metrics['threshold'], step)
+            if train_auc is not None:
+                writer.add_scalar('AUC/train', train_auc, step)
+            if train_threshold_metrics is not None:
+                log_best_threshold_scalars(writer, train_threshold_metrics, step, prefix='train')
+            if val_threshold_metrics is not None:
+                log_best_threshold_scalars(writer, val_threshold_metrics, step, prefix='val')
         
         # Early stopping check
         if val_auc > best_val_auc + config['early_stopping_min_delta']:
@@ -701,7 +661,8 @@ def train(
             if patience_counter >= config['early_stopping_patience']:
                 logger.info(f"Early stopping at epoch {epoch + 1}")
                 break
-
+    
+    # Log best AUC to TensorBoard
     if writer is not None:
         writer.add_scalar('Best/val_auc', best_val_auc, best_epoch if best_epoch != -1 else config['num_epochs'])
         writer.flush()
@@ -711,28 +672,54 @@ def train(
         model.load_state_dict(best_model_state)
         logger.info(f"Loaded best model with validation AUC: {best_val_auc:.4f}")
         
-        # Re-evaluate best model to get final metrics
-        val_loss, val_acc, val_auc, confusion, best_threshold_metrics = evaluate(
-            model, val_loader, criterion, device, val_clinical_dict, return_confusion=True
+        # Re-evaluate best model on both train and val sets
+        train_loss, train_acc, train_auc, train_confusion, train_threshold_metrics = evaluate(
+            model, train_loader, criterion, device, return_confusion=True
+        )
+        val_loss, val_acc, val_auc, val_confusion, val_threshold_metrics = evaluate(
+            model, val_loader, criterion, device, return_confusion=True
         )
         
         logger.info(
-            f"Final Val Results (Best Model) - Loss: {val_loss:.4f}, "
+            f"Final Train Results (Best Model) at epoch {best_epoch} - Loss: {train_loss:.4f}, "
+            f"Accuracy: {train_acc:.4f}, AUC: {train_auc:.4f}"
+        )
+        logger.info(
+            f"Final Val Results (Best Model) at epoch {best_epoch} - Loss: {val_loss:.4f}, "
             f"Accuracy: {val_acc:.4f}, AUC: {val_auc:.4f}"
         )
         
-        # Return the best validation AUC (from early stopping)
-        # This is more reliable than re-evaluation which might have slight differences
-        if best_threshold_metrics is not None:
-            log_best_threshold_metrics(best_threshold_metrics)
+        # Log train metrics
+        if train_threshold_metrics is not None:
+            log_best_threshold_metrics(train_threshold_metrics, prefix="Train")
             if writer is not None:
                 log_best_threshold_scalars(
                     writer,
-                    best_threshold_metrics,
-                    best_epoch if best_epoch != -1 else config['num_epochs']
+                    train_threshold_metrics,
+                    best_epoch if best_epoch != -1 else config['num_epochs'],
+                    prefix='train'
                 )
-        if confusion is not None and writer is not None:
-            fig = create_confusion_matrix_figure(confusion)
+        if train_confusion is not None and writer is not None:
+            fig = create_confusion_matrix_figure(train_confusion)
+            writer.add_figure(
+                'ConfusionMatrix/train',
+                fig,
+                global_step=best_epoch if best_epoch != -1 else config['num_epochs']
+            )
+            plt.close(fig)
+        
+        # Log val metrics
+        if val_threshold_metrics is not None:
+            log_best_threshold_metrics(val_threshold_metrics, prefix="Val")
+            if writer is not None:
+                log_best_threshold_scalars(
+                    writer,
+                    val_threshold_metrics,
+                    best_epoch if best_epoch != -1 else config['num_epochs'],
+                    prefix='val'
+                )
+        if val_confusion is not None and writer is not None:
+            fig = create_confusion_matrix_figure(val_confusion)
             writer.add_figure(
                 'ConfusionMatrix/val',
                 fig,
@@ -742,19 +729,38 @@ def train(
         return best_val_auc
     else:
         # If no best model was saved (shouldn't happen), use final evaluation
-        val_loss, val_acc, val_auc, confusion, best_threshold_metrics = evaluate(
-            model, val_loader, criterion, device, val_clinical_dict, return_confusion=True
+        train_loss, train_acc, train_auc, train_confusion, train_threshold_metrics = evaluate(
+            model, train_loader, criterion, device, return_confusion=True
+        )
+        val_loss, val_acc, val_auc, val_confusion, val_threshold_metrics = evaluate(
+            model, val_loader, criterion, device, return_confusion=True
+        )
+        logger.info(
+            f"\nFinal Train Results - Loss: {train_loss:.4f}, "
+            f"Accuracy: {train_acc:.4f}, AUC: {train_auc:.4f}"
         )
         logger.info(
             f"\nFinal Val Results - Loss: {val_loss:.4f}, "
             f"Accuracy: {val_acc:.4f}, AUC: {val_auc:.4f}"
         )
-        if best_threshold_metrics is not None:
-            log_best_threshold_metrics(best_threshold_metrics)
+        if train_threshold_metrics is not None:
+            log_best_threshold_metrics(train_threshold_metrics, prefix="Train")
             if writer is not None:
-                log_best_threshold_scalars(writer, best_threshold_metrics, config['num_epochs'])
-        if confusion is not None and writer is not None:
-            fig = create_confusion_matrix_figure(confusion)
+                log_best_threshold_scalars(writer, train_threshold_metrics, config['num_epochs'], prefix='train')
+        if train_confusion is not None and writer is not None:
+            fig = create_confusion_matrix_figure(train_confusion)
+            writer.add_figure(
+                'ConfusionMatrix/train',
+                fig,
+                global_step=config['num_epochs']
+            )
+            plt.close(fig)
+        if val_threshold_metrics is not None:
+            log_best_threshold_metrics(val_threshold_metrics, prefix="Val")
+            if writer is not None:
+                log_best_threshold_scalars(writer, val_threshold_metrics, config['num_epochs'], prefix='val')
+        if val_confusion is not None and writer is not None:
+            fig = create_confusion_matrix_figure(val_confusion)
             writer.add_figure(
                 'ConfusionMatrix/val',
                 fig,
@@ -774,7 +780,7 @@ def main():
     set_global_seed(config['seed'])
     
     # Determine model name
-    model_name = f"C1 (Mean Pooling)" if config['pooling'] == 'mean' else f"C2 (Attention Pooling)"
+    model_name = "A1 (Mean Pooling)" if config['model_type'] == 'mean' else "A2 (Attention Pooling)"
     
     config['log_dir'].mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -798,7 +804,7 @@ def main():
     logger.info("Loading clinical data...")
     clinical_config = ClinicalConfig(
         csv_path=config['clinical_csv'],
-        feature_columns=config['clinical_features'],
+        feature_columns=["AST", "ALT", "PLT", "APRI", "FIB_4"],
         patient_id_column=config['patient_id_column'],
         label_column=config['label_column'],
         fibrosis_stage_column=None,
@@ -835,13 +841,6 @@ def main():
             patient_records, train_idx, val_idx
         )
         
-        # Split clinical DataFrames
-        train_patient_ids = [int(r.patient_id) for r in train_records]
-        val_patient_ids = [int(r.patient_id) for r in val_records]
-        
-        train_df = df.loc[train_patient_ids]
-        val_df = df.loc[val_patient_ids]
-        
         logger.info(f"Train/Val Split:")
         logger.info(f"  Train: {len(train_records)} patients ({len(train_records)/len(patient_records)*100:.1f}%)")
         logger.info(f"  Val:   {len(val_records)} patients ({len(val_records)/len(patient_records)*100:.1f}%)")
@@ -850,10 +849,7 @@ def main():
         run_name = f"{model_slug}_single_{config['backbone']}_{timestamp}"
         writer = SummaryWriter(log_dir=str(config['log_dir'] / run_name))
         try:
-            val_auc = train(
-                0, train_records, val_records,
-                train_df, val_df, config, writer
-            )
+            val_auc = train(0, train_records, val_records, config, writer)
         finally:
             writer.close()
         
@@ -863,7 +859,6 @@ def main():
         logger.info(f"{'='*70}")
         logger.info(f"Model: {model_name}")
         logger.info(f"Backbone: {config['backbone']}")
-        logger.info(f"Pooling: {config['pooling']}")
         logger.info(f"Val AUC: {val_auc:.4f}")
         logger.info(f"{'='*70}")
     else:
@@ -886,21 +881,11 @@ def main():
                 patient_records, train_idx, val_idx
             )
             
-            # Split clinical DataFrames
-            train_patient_ids = [int(r.patient_id) for r in train_records]
-            val_patient_ids = [int(r.patient_id) for r in val_records]
-            
-            train_df = df.loc[train_patient_ids]
-            val_df = df.loc[val_patient_ids]
-            
             # Train fold
             fold_run_name = f"{run_base}_fold{fold + 1}"
             writer = SummaryWriter(log_dir=str(config['log_dir'] / fold_run_name))
             try:
-                val_auc = train(
-                    fold, train_records, val_records,
-                    train_df, val_df, config, writer
-                )
+                val_auc = train(fold, train_records, val_records, config, writer)
             finally:
                 writer.close()
             val_aucs.append(val_auc)
@@ -911,7 +896,6 @@ def main():
         logger.info(f"{'='*70}")
         logger.info(f"Model: {model_name}")
         logger.info(f"Backbone: {config['backbone']}")
-        logger.info(f"Pooling: {config['pooling']}")
         logger.info(f"Val AUCs: {[f'{auc:.4f}' for auc in val_aucs]}")
         logger.info(f"Mean Val AUC: {np.mean(val_aucs):.4f} ± {np.std(val_aucs):.4f}")
         logger.info(f"{'='*70}")

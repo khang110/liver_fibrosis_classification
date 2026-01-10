@@ -82,7 +82,7 @@ class BModeMeanPoolingModel(nn.Module):
         self,
         backbone: Literal["resnet18", "resnet34", "efficientnetv2_b0", "efficientnetv2_b2"] = "resnet18",
         pretrained: bool = True,
-        num_classes: int = 1
+        num_classes: int = 2
     ):
         """Initialize the B-mode mean pooling model.
         
@@ -97,7 +97,7 @@ class BModeMeanPoolingModel(nn.Module):
         # Load backbone
         self.backbone, num_features = load_backbone(backbone, pretrained)
         
-        # Replace the final fully connected layer to output a single logit per image
+        # Replace the final fully connected layer to output class logits per image
         # Handle different backbone structures
         if hasattr(self.backbone, 'fc'):  # ResNet
             self.backbone.fc = nn.Linear(num_features, num_classes)
@@ -134,19 +134,15 @@ class BModeMeanPoolingModel(nn.Module):
         # Reshape to process all images: (B*T, C, H, W)
         x = x.view(B * T, C, H, W)
         
-        # Pass through backbone: (B*T, 1) - one logit per image
-        image_logits = self.backbone(x)  # Shape: (B*T, 1)
+        # Pass through backbone: (B*T, num_classes) - class logits per image
+        image_logits = self.backbone(x)  # Shape: (B*T, num_classes)
         
-        # Reshape back to (B, T, 1) to group by patient
-        image_logits = image_logits.view(B, T, 1)
+        # Reshape back to (B, T, num_classes) to group by patient
+        image_logits = image_logits.view(B, T, -1)
         
-        # Mean pool over the temporal dimension (T=3) to get patient-level logit
-        # Shape: (B, 1)
+        # Mean pool over the temporal dimension (T=3) to get patient-level logits
+        # Shape: (B, num_classes)
         patient_logits = image_logits.mean(dim=1)
-        
-        # Squeeze to (B,) for binary classification
-        patient_logits = patient_logits.squeeze(dim=1)
-        
         return patient_logits
 
 
@@ -176,7 +172,7 @@ def create_bmode_mean_model(
     model = BModeMeanPoolingModel(
         backbone=backbone,
         pretrained=pretrained,
-        num_classes=1
+        num_classes=2
     )
     return model
 
@@ -260,8 +256,8 @@ class BModeAttentionPoolingModel(nn.Module):
         self.attention_b = nn.Parameter(torch.zeros(attention_hidden))
         self.attention_v = nn.Parameter(torch.randn(attention_hidden))
         
-        # Final classification layer
-        self.fc = nn.Linear(feature_dim, 1)
+        # Final classification layer: outputs class logits
+        self.fc = nn.Linear(feature_dim, 2)
         
         # Store backbone name for reference
         self.backbone_name = backbone
@@ -322,12 +318,8 @@ class BModeAttentionPoolingModel(nn.Module):
         attention_weights_expanded = attention_weights.unsqueeze(-1)  # (B, T, 1)
         patient_features = (attention_weights_expanded * features).sum(dim=1)  # (B, feature_dim)
         
-        # Apply final linear layer to get patient-level logits: (B, 1)
-        patient_logits = self.fc(patient_features)  # (B, 1)
-        
-        # Squeeze to (B,) for binary classification
-        patient_logits = patient_logits.squeeze(-1)  # (B,)
-        
+        # Apply final linear layer to get patient-level logits: (B, num_classes=2)
+        patient_logits = self.fc(patient_features)  # (B, 2)
         return patient_logits
 
 
@@ -372,242 +364,6 @@ def create_bmode_attention_model(
         attention_hidden=attention_hidden
     )
     return model
-
-
-class BModeRadiomicsFusionModel(nn.Module):
-    """CNN + Radiomics fusion model for liver fibrosis classification.
-    
-    This model combines B-mode image features (from CNN) with radiomics features
-    to produce patient-level predictions. It uses a two-branch architecture:
-    
-    1. CNN branch: Extracts features from 3 B-mode images using mean pooling
-    2. Radiomics branch: Processes radiomics feature vectors
-    3. Fusion: Concatenates both branches and applies MLP for final prediction
-    
-    Architecture:
-    - CNN backbone (ResNet18/34) extracts features from each image
-    - Mean pooling over 3 images to get patient-level image features
-    - Linear layer + ReLU processes radiomics features
-    - Concatenation of image and radiomics features
-    - Fusion MLP: Linear -> ReLU -> Dropout -> Linear -> logits
-    
-    Input shapes:
-    - x: (B, T=3, C, H, W) where T=3 is number of B-mode images
-    - rad_features: (B, R) where R is number of radiomics features
-    
-    Output shape: (B,) - patient-level logits
-    """
-    
-    def __init__(
-        self,
-        backbone: Literal["resnet18", "resnet34", "efficientnetv2_b0", "efficientnetv2_b2"] = "resnet18",
-        pretrained: bool = True,
-        feature_dim: int = 512,
-        radiomics_dim: int = 64,
-        fusion_hidden: int = 128,
-        dropout: float = 0.5
-    ):
-        """Initialize the B-mode + radiomics fusion model.
-        
-        Args:
-            backbone: Backbone architecture to use ('resnet18', 'resnet34', 
-                'efficientnetv2_b0', 'efficientnetv2_b2').
-            pretrained: Whether to use ImageNet pretrained weights. Default: True.
-            feature_dim: Dimension of CNN feature vectors (should match backbone).
-                Default: 512.
-            radiomics_dim: Output dimension for processed radiomics features.
-                Default: 64.
-            fusion_hidden: Hidden dimension for fusion MLP. Default: 128.
-            dropout: Dropout probability in fusion MLP. Default: 0.5.
-        """
-        super().__init__()
-        
-        # Load backbone
-        self.backbone, backbone_feature_dim = load_backbone(backbone, pretrained)
-        
-        # Verify feature_dim matches backbone
-        if feature_dim != backbone_feature_dim:
-            logger.warning(
-                f"feature_dim ({feature_dim}) does not match backbone feature dim "
-                f"({backbone_feature_dim}). Using backbone feature dim."
-            )
-            feature_dim = backbone_feature_dim
-        
-        # Remove the final FC/classifier layer to extract features
-        if hasattr(self.backbone, 'fc'):  # ResNet
-            self.backbone.fc = nn.Identity()
-        elif hasattr(self.backbone, 'classifier'):  # EfficientNet
-            # Keep only the dropout, remove the linear layer
-            self.backbone.classifier = nn.Sequential(
-                self.backbone.classifier[0],  # Dropout
-                nn.Identity()
-            )
-        else:
-            raise ValueError(f"Unknown backbone structure for {backbone}")
-        
-        self.feature_dim = feature_dim
-        
-        # Radiomics branch: Linear layer + ReLU
-        # Input dimension will be set during first forward pass or can be specified
-        # For now, we'll make it flexible
-        self.radiomics_projection = None  # Will be initialized in forward if needed
-        self.radiomics_dim = radiomics_dim
-        self._radiomics_input_dim = None  # Will be set from first input
-        
-        # Fusion MLP
-        # Input: feature_dim (CNN) + radiomics_dim (processed radiomics)
-        fusion_input_dim = feature_dim + radiomics_dim
-        self.fusion_mlp = nn.Sequential(
-            nn.Linear(fusion_input_dim, fusion_hidden),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(fusion_hidden, 1)
-        )
-        
-        # Store configuration
-        self.backbone_name = backbone
-        self.pretrained = pretrained
-        self.fusion_hidden = fusion_hidden
-        self.dropout = dropout
-    
-    def _initialize_radiomics_projection(self, radiomics_input_dim: int):
-        """Initialize radiomics projection layer.
-        
-        Args:
-            radiomics_input_dim: Number of input radiomics features.
-        """
-        if self.radiomics_projection is None or self._radiomics_input_dim != radiomics_input_dim:
-            self.radiomics_projection = nn.Sequential(
-                nn.Linear(radiomics_input_dim, self.radiomics_dim),
-                nn.ReLU()
-            )
-            self._radiomics_input_dim = radiomics_input_dim
-            # Move to same device as other parameters
-            if next(self.fusion_mlp.parameters()).is_cuda:
-                self.radiomics_projection = self.radiomics_projection.cuda()
-    
-    def forward(
-        self,
-        x: torch.Tensor,
-        rad_features: torch.Tensor
-    ) -> torch.Tensor:
-        """Forward pass through the model.
-        
-        Args:
-            x: Input tensor of shape (B, T=3, C, H, W) where:
-                B = batch size
-                T = 3 (number of B-mode images per patient)
-                C = 3 (RGB channels)
-                H, W = 224 (image dimensions)
-            rad_features: Radiomics feature tensor of shape (B, R) where:
-                B = batch size
-                R = number of radiomics features per patient
-        
-        Returns:
-            Tensor of shape (B,) containing patient-level logits.
-        """
-        # Validate input shapes
-        if len(x.shape) != 5:
-            raise ValueError(f"Expected x shape (B, T, C, H, W), got {x.shape}")
-        if len(rad_features.shape) != 2:
-            raise ValueError(f"Expected rad_features shape (B, R), got {rad_features.shape}")
-        
-        B, T, C, H, W = x.shape
-        B_rad, R = rad_features.shape
-        
-        if B != B_rad:
-            raise ValueError(
-                f"Batch size mismatch: x has {B} samples, "
-                f"rad_features has {B_rad} samples"
-            )
-        
-        # Initialize radiomics projection if needed
-        self._initialize_radiomics_projection(R)
-        
-        # CNN branch: Extract features from images
-        # Reshape to process all images: (B*T, C, H, W)
-        x_flat = x.view(B * T, C, H, W)
-        
-        # Extract features from backbone: (B*T, feature_dim)
-        image_features = self.backbone(x_flat)  # (B*T, feature_dim)
-        
-        # Reshape to group by patient: (B, T, feature_dim)
-        image_features = image_features.view(B, T, self.feature_dim)
-        
-        # Mean pool over temporal dimension: (B, feature_dim)
-        f_img = image_features.mean(dim=1)  # (B, feature_dim)
-        
-        # Radiomics branch: Process radiomics features
-        # Linear + ReLU: (B, R) -> (B, radiomics_dim)
-        g_rad = self.radiomics_projection(rad_features)  # (B, radiomics_dim)
-        
-        # Fusion: Concatenate image and radiomics features
-        # z = [f_img; g_rad]: (B, feature_dim + radiomics_dim)
-        z = torch.cat([f_img, g_rad], dim=1)  # (B, feature_dim + radiomics_dim)
-        
-        # Fusion MLP: (B, feature_dim + radiomics_dim) -> (B, 1)
-        logits = self.fusion_mlp(z)  # (B, 1)
-        
-        # Squeeze to (B,) for binary classification
-        logits = logits.squeeze(-1)  # (B,)
-        
-        return logits
-
-
-def create_bmode_radiomics_fusion_model(
-    backbone: Literal["resnet18", "resnet34", "efficientnetv2_b0", "efficientnetv2_b2"] = "resnet18",
-    pretrained: bool = True,
-    feature_dim: int = 512,
-    radiomics_dim: int = 64,
-    fusion_hidden: int = 128,
-    dropout: float = 0.5,
-    radiomics_input_dim: Optional[int] = None
-) -> nn.Module:
-    """Create a B-mode + radiomics fusion model.
-    
-    Convenience function to instantiate a BModeRadiomicsFusionModel with default
-    or specified parameters.
-    
-    Args:
-        backbone: ResNet architecture to use ('resnet18' or 'resnet34').
-            Default: 'resnet18'.
-        pretrained: Whether to use ImageNet pretrained weights. Default: True.
-        feature_dim: Dimension of CNN feature vectors. Default: 512.
-        radiomics_dim: Output dimension for processed radiomics features.
-            Default: 64.
-        fusion_hidden: Hidden dimension for fusion MLP. Default: 128.
-        dropout: Dropout probability in fusion MLP. Default: 0.5.
-        radiomics_input_dim: Number of input radiomics features. If None,
-            will be inferred from first forward pass. Default: None.
-    
-    Returns:
-        BModeRadiomicsFusionModel instance ready for training or inference.
-    
-    Example:
-        >>> model = create_bmode_radiomics_fusion_model(
-        ...     backbone="resnet18",
-        ...     pretrained=True,
-        ...     radiomics_input_dim=10
-        ... )
-        >>> # Input: images (batch_size, 3, 3, 224, 224), radiomics (batch_size, 10)
-        >>> # Output: (batch_size,)
-        >>> output = model(images, radiomics)
-    """
-    model = BModeRadiomicsFusionModel(
-        backbone=backbone,
-        pretrained=pretrained,
-        feature_dim=feature_dim,
-        radiomics_dim=radiomics_dim,
-        fusion_hidden=fusion_hidden,
-        dropout=dropout
-    )
-    
-    # Initialize radiomics projection if input dimension is provided
-    if radiomics_input_dim is not None:
-        model._initialize_radiomics_projection(radiomics_input_dim)
-    
-    return model
-
 
 class BModeClinicalFusionModel(nn.Module):
     """CNN + Clinical fusion model for liver fibrosis classification.
@@ -717,7 +473,7 @@ class BModeClinicalFusionModel(nn.Module):
             nn.Linear(fusion_input_dim, fusion_hidden),
             nn.ReLU(),
             nn.Dropout(dropout),
-            nn.Linear(fusion_hidden, 1)
+            nn.Linear(fusion_hidden, 2)
         )
         
         # Store configuration
@@ -734,6 +490,7 @@ class BModeClinicalFusionModel(nn.Module):
         """
         if self.clinical_projection is None or self._clinical_input_dim != clinical_input_dim:
             self.clinical_projection = nn.Sequential(
+                nn.LayerNorm(clinical_input_dim),  # 20252012
                 nn.Linear(clinical_input_dim, self.clinical_dim),
                 nn.ReLU()
             )
@@ -840,12 +597,8 @@ class BModeClinicalFusionModel(nn.Module):
         # z = [f_img; g_clin]: (B, feature_dim + clinical_dim)
         z = torch.cat([f_img, g_clin], dim=1)  # (B, feature_dim + clinical_dim)
         
-        # Fusion MLP: (B, feature_dim + clinical_dim) -> (B, 1)
-        logits = self.fusion_mlp(z)  # (B, 1)
-        
-        # Squeeze to (B,) for binary classification
-        logits = logits.squeeze(-1)  # (B,)
-        
+        # Fusion MLP: (B, feature_dim + clinical_dim) -> (B, 2)
+        logits = self.fusion_mlp(z)  # (B, 2)
         return logits
 
 
@@ -915,4 +668,3 @@ def create_bmode_clinical_fusion_model(
         model._initialize_clinical_projection(clinical_input_dim)
     
     return model
-
