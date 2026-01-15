@@ -225,7 +225,7 @@ def get_config(args):
         'fusion_hidden': args.fusion_hidden,
         'dropout': args.dropout,
         'clinical_features': ["AST", "ALT", "PLT", "APRI", "FIB_4"],
-        #'clinical_features': ["AST", "ALT", "PLT"], 
+        # 'clinical_features': ["AST", "ALT", "PLT"], 
         # 'clinical_features': ["AGE","Sex","Height","weight","BMI","AST","ALT","PLT"],
         'seed': args.seed,
         'no_cv': args.no_cv,

@@ -35,10 +35,11 @@ from sklearn.metrics import (
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
+from torch.optim.lr_scheduler import CosineAnnealingLR, ReduceLROnPlateau
 import matplotlib.pyplot as plt
 
 from data.clinical_data import ClinicalConfig, load_clinical_table
-from data.datasets import BModePatientDataset, get_eval_transform, get_train_transform
+from data.datasets import BModePatientDataset, get_eval_transform, get_train_transform, get_train_transform_advanced
 from data.image_index import PatientRecord, build_patient_records
 from models.bmode_models import (
     create_bmode_attention_model,
@@ -156,6 +157,21 @@ def parse_args():
         default='runs/bmode',
         help='Root directory for TensorBoard logs. Default: runs/bmode'
     )
+    parser.add_argument(
+        '--use_advanced_aug',
+        action='store_true',
+        help='Use advanced data augmentation. Default: False (use basic augmentation)'
+    )
+    parser.add_argument(
+        '--use_lr_scheduler',
+        action='store_true',
+        help='Use cosine annealing LR scheduler. Default: False'
+    )
+    parser.add_argument(
+        '--use_tta',
+        action='store_true',
+        help='Use test-time augmentation during validation. Default: False'
+    )
     
     return parser.parse_args()
 
@@ -175,10 +191,10 @@ def get_config(args):
     
     config = {
         'clinical_csv': Path("data/annotations/175_clinical_5_variables.csv"),
-        'image_root': Path("data/nakagami_full"),
+        'image_root': Path("data/bmode_full"),
         'patient_id_column': "NO",
         'label_column': "CL_F2",
-        'image_pattern': "Nakagami_image_*.png",  #Nakagami_image_
+        'image_pattern': "Bmode_image_*.png",  #Nakagami_image_
         'n_folds': 5,
         'batch_size': args.batch_size,
         'learning_rate': args.learning_rate,
@@ -195,6 +211,9 @@ def get_config(args):
         'no_cv': args.no_cv,
         'val_split': args.val_split,
         'log_dir': Path(args.log_dir),
+        'use_advanced_aug': args.use_advanced_aug,
+        'use_lr_scheduler': args.use_lr_scheduler,
+        'use_tta': args.use_tta,
     }
     
     return config
@@ -509,9 +528,10 @@ def train(
         logger.info(f"{'='*70}")
     
     # Create datasets
+    train_transform = get_train_transform_advanced() if config.get('use_advanced_aug', False) else get_train_transform()
     train_dataset = BModePatientDataset(
         train_records,
-        transform=get_train_transform()
+        transform=train_transform
     )
     val_dataset = BModePatientDataset(
         val_records,
@@ -584,6 +604,16 @@ def train(
         lr=config['learning_rate']
     )
     
+    # Learning rate scheduler (optional)
+    scheduler = None
+    if config.get('use_lr_scheduler', False):
+        scheduler = CosineAnnealingLR(
+            optimizer,
+            T_max=config['num_epochs'],
+            eta_min=1e-6
+        )
+        logger.info("Using CosineAnnealingLR scheduler")
+    
     logger.info(f"Using device: {device}")
     logger.info(f"Class weights: {class_weights.cpu().numpy().tolist()}")
     
@@ -648,6 +678,12 @@ def train(
                 log_best_threshold_scalars(writer, train_threshold_metrics, step, prefix='train')
             if val_threshold_metrics is not None:
                 log_best_threshold_scalars(writer, val_threshold_metrics, step, prefix='val')
+        
+        # Step scheduler after each epoch
+        if scheduler is not None:
+            scheduler.step()
+            current_lr = optimizer.param_groups[0]['lr']
+            logger.info(f"  Current LR: {current_lr:.6f}")
         
         # Early stopping check
         if val_auc > best_val_auc + config['early_stopping_min_delta']:
