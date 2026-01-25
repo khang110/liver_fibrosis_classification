@@ -48,6 +48,7 @@ from models.bmode_models import (
 )
 
 os.makedirs("logs", exist_ok=True)  # optional, create folder
+os.makedirs("weights", exist_ok=True)
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
@@ -190,11 +191,11 @@ def get_config(args):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
     config = {
-        'clinical_csv': Path("data/annotations/175_clinical_5_variables.csv"),
-        'image_root': Path("data/bmode_full"),
+        'clinical_csv': Path("data/annotations/175_clinical_11_variables_F3.csv"),
+        'image_root': Path("data/nakagami_full"),
         'patient_id_column': "NO",
-        'label_column': "CL_F2",
-        'image_pattern': "Bmode_image_*.png",  #Nakagami_image_
+        'label_column': "CL_F3",
+        'image_pattern': "Nakagami_image_*.png",  #Nakagami_image_ // Bmode_image_
         'n_folds': 5,
         'batch_size': args.batch_size,
         'learning_rate': args.learning_rate,
@@ -507,7 +508,8 @@ def train(
     train_records: List[PatientRecord],
     val_records: List[PatientRecord],
     config: dict,
-    writer: Optional[SummaryWriter] = None
+    writer: Optional[SummaryWriter] = None,
+    run_name: Optional[str] = None
 ) -> float:
     """Train model for one fold.
     
@@ -692,6 +694,11 @@ def train(
             best_model_state = copy.deepcopy(model.state_dict())
             best_epoch = epoch + 1
             logger.info(f"  → New best validation AUC: {best_val_auc:.4f}")
+            
+            if run_name:
+                save_path = Path("weights") / f"{run_name}_best.pth"
+                torch.save(best_model_state, save_path)
+                logger.info(f"  → Saved best model to {save_path}")
         else:
             patience_counter += 1
             if patience_counter >= config['early_stopping_patience']:
@@ -885,7 +892,7 @@ def main():
         run_name = f"{model_slug}_single_{config['backbone']}_{timestamp}"
         writer = SummaryWriter(log_dir=str(config['log_dir'] / run_name))
         try:
-            val_auc = train(0, train_records, val_records, config, writer)
+            val_auc = train(0, train_records, val_records, config, writer, run_name=run_name)
         finally:
             writer.close()
         
@@ -921,7 +928,7 @@ def main():
             fold_run_name = f"{run_base}_fold{fold + 1}"
             writer = SummaryWriter(log_dir=str(config['log_dir'] / fold_run_name))
             try:
-                val_auc = train(fold, train_records, val_records, config, writer)
+                val_auc = train(fold, train_records, val_records, config, writer, run_name=fold_run_name)
             finally:
                 writer.close()
             val_aucs.append(val_auc)
