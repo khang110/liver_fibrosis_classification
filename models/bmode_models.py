@@ -41,16 +41,20 @@ def load_backbone(
         feature_dim = model.fc.in_features
     elif backbone == "efficientnetv2_b0":
         # Use efficientnet_b0 (EfficientNet v1 B0)
-        model = models.efficientnet_b0(weights=weights)
+        model = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.IMAGENET1K_V1)
         feature_dim = model.classifier[1].in_features
     elif backbone == "efficientnetv2_b2":
         # Use efficientnet_b2 (EfficientNet v1 B2)
-        model = models.efficientnet_b2(weights=weights)
+        model = models.efficientnet_b2(weights=models.EfficientNet_B2_Weights.IMAGENET1K_V1)
+        feature_dim = model.classifier[1].in_features
+    elif backbone == "efficientnet_v2_s":
+        # Use efficientnet_v2_s (EfficientNet v2 S)
+        model = models.efficientnet_v2_s(weights=models.EfficientNet_V2_S_Weights.IMAGENET1K_V1)
         feature_dim = model.classifier[1].in_features
     else:
         raise ValueError(
             f"Unsupported backbone: {backbone}. "
-            f"Supported: 'resnet18', 'resnet34', 'efficientnetv2_b0', 'efficientnetv2_b2'"
+            f"Supported: 'resnet18', 'resnet34', 'efficientnetv2_b0', 'efficientnetv2_b2', 'efficientnet_v2_s'"
         )
     
     return model, feature_dim

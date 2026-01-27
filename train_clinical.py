@@ -87,7 +87,7 @@ def parse_args():
     parser.add_argument(
         '--backbone',
         type=str,
-        choices=['resnet18', 'resnet34', 'efficientnetv2_b0', 'efficientnetv2_b2'],
+        choices=['resnet18', 'resnet34', 'efficientnetv2_b0', 'efficientnetv2_b2', 'efficientnet_v2_s'],
         default='resnet18',
         help='Backbone architecture. Options: resnet18, resnet34, efficientnetv2_b0, efficientnetv2_b2. Default: resnet18'
     )
@@ -1041,6 +1041,13 @@ def main():
             train_records, val_records = split_patients_stratified(
                 patient_records, train_idx, val_idx
             )
+            
+            # Log patient IDs for this fold
+            train_pids = sorted([r.patient_id for r in train_records])
+            val_pids = sorted([r.patient_id for r in val_records])
+            
+            logger.info(f"\nFold {fold + 1} Training Cases ({len(train_pids)}): {train_pids}")
+            logger.info(f"Fold {fold + 1} Validation Cases ({len(val_pids)}): {val_pids}")
             
             # Log class distribution for debugging
             train_labels_dist = np.bincount([r.label_binary for r in train_records])

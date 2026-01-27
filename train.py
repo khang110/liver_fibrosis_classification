@@ -191,11 +191,11 @@ def get_config(args):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
     config = {
-        'clinical_csv': Path("data/annotations/175_clinical_11_variables_F3.csv"),
-        'image_root': Path("data/nakagami_full"),
+        'clinical_csv': Path("data/annotations/data1_175case_LB.csv"),
+        'image_root': Path("data/nakagami_full_cropped"),  # nakagami_full_cropped// nakagami_full
         'patient_id_column': "NO",
-        'label_column': "CL_F3",
-        'image_pattern': "Nakagami_image_*.png",  #Nakagami_image_ // Bmode_image_
+        'label_column': "CL_F2",
+        'image_pattern': "Nakagami_image_*.png",  #Nakagami_image_ // Bmode_image_ // Nakagami_ROI_1
         'n_folds': 5,
         'batch_size': args.batch_size,
         'learning_rate': args.learning_rate,
