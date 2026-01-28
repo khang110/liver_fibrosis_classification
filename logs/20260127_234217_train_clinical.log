@@ -1,0 +1,95 @@
+Starting 5-fold cross-validation training for C1 (Mean Pooling)
+Configuration:
+  clinical_csv: data/annotations/175_clinical_5_variables.csv
+  image_root: data/nakagami_full
+  patient_id_column: NO
+  label_column: CL_F2
+  image_pattern: Nakagami_image_*.png
+  n_folds: 5
+  batch_size: 8
+  learning_rate: 0.0001
+  num_epochs: 1
+  early_stopping_patience: 12
+  early_stopping_min_delta: 0.001
+  backbone: resnet18
+  pretrained: True
+  device: cuda
+  num_workers: 4
+  pooling: mean
+  attention_hidden: 128
+  clinical_dim: 32
+  fusion_hidden: 128
+  dropout: 0.3
+  clinical_features: ['AST', 'ALT', 'PLT', 'APRI', 'FIB_4']
+  seed: 42
+  no_cv: False
+  val_split: 0.2
+  weight_decay: 0.0
+  label_smoothing: 0.0
+  log_dir: runs/bmode_clinical
+Loading clinical data...
+Loaded 175 patients from clinical data
+Building patient records...
+Building patient records from 175 patients...
+Image root: data/nakagami_full
+Image pattern: Nakagami_image_*.png
+Successfully created 175 patient records
+Created 175 patient records
+Fold 1 Training Cases (140): ['1', '100', '101', '102', '105', '106', '107', '108', '11', '111', '112', '113', '115', '118', '119', '122', '126', '132', '137', '142', '145', '146', '152', '153', '157', '158', '162', '164', '165', '166', '169', '173', '175', '177', '178', '18', '180', '181', '185', '186', '191', '197', '203', '204', '205', '206', '207', '210', '211', '215', '217', '218', '219', '220', '221', '223', '224', '226', '231', '232', '24', '241', '244', '245', '25', '250', '251', '255', '257', '259', '260', '262', '263', '268', '269', '27', '272', '273', '275', '278', '280', '281', '283', '284', '287', '289', '29', '298', '299', '301', '304', '306', '308', '31', '311', '312', '313', '319', '32', '320', '324', '329', '332', '38', '43', '45', '46', '48', '49', '5', '50', '51', '52', '57', '58', '6', '60', '62', '63', '64', '67', '68', '69', '7', '73', '77', '78', '81', '83', '85', '86', '88', '9', '90', '91', '92', '95', '96', '97', '98']
+Fold 1 Validation Cases (35): ['104', '110', '114', '123', '129', '135', '144', '154', '163', '192', '253', '254', '258', '26', '264', '274', '276', '292', '300', '303', '307', '310', '331', '37', '4', '40', '53', '55', '65', '8', '80', '87', '89', '93', '99']
+Fold 1 class distribution:
+  Train: Class 0=47 (33.6%), Class 1=93 (66.4%)
+  Val:   Class 0=11 (31.4%), Class 1=24 (68.6%)
+
+======================================================================
+Fold 1/5
+======================================================================
+Train: 140 patients
+Val: 35 patients
+Fitting clinical preprocessor on training data...
+Built clinical feature dictionaries: train=140, val=35
+Clinical input dimension: 5
+Backbone feature dimension: 512
+Created mean pooling model with backbone resnet18
+Using device: cuda
+Class weights: [1.0, 0.5053763389587402]
+
+Epoch 1/1 - Train Loss: 0.7227, Train Acc: 0.4429, Train AUC: 0.5063 - Val Loss: 0.7147, Val Acc (0.5): 0.6857, Val AUC: 0.7083
+  Train Best Threshold 0.40 → Balanced Acc: 0.5254, Acc: 0.6071, Sensitivity: 0.7742, Specificity: 0.2766, PPV: 0.6792, NPV: 0.3824, F1: 0.7236
+  Val Best Threshold 0.65 → Balanced Acc: 0.7102, Acc: 0.7714, Sensitivity: 0.8750, Specificity: 0.5455, PPV: 0.8077, NPV: 0.6667, F1: 0.8400
+  → New best validation AUC: 0.7083
+Loaded best model with validation AUC: 0.7083
+Final Train Results (Best Model) at epoch 1 - Loss: 0.6820, Accuracy: 0.6429, AUC: 0.6362
+Final Val Results (Best Model) at epoch 1 - Loss: 0.7147, Accuracy: 0.6857, AUC: 0.7083
+Train Best Threshold: 0.60 | Balanced Acc: 0.6205 | Acc: 0.6286 | Sensitivity: 0.6452 | Specificity: 0.5957 | PPV: 0.7595 | NPV: 0.4590 | F1: 0.6977
+Train Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[28 19]
+ [33 60]]
+Val Best Threshold: 0.65 | Balanced Acc: 0.7102 | Acc: 0.7714 | Sensitivity: 0.8750 | Specificity: 0.5455 | PPV: 0.8077 | NPV: 0.6667 | F1: 0.8400
+Val Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[ 6  5]
+ [ 3 21]]
+Fold 2 Training Cases (140): ['100', '102', '104', '106', '107', '11', '110', '111', '112', '114', '115', '118', '122', '123', '129', '132', '135', '137', '142', '144', '146', '153', '154', '157', '158', '162', '163', '164', '165', '166', '173', '177', '178', '18', '180', '185', '191', '192', '197', '204', '205', '207', '210', '211', '215', '217', '218', '219', '220', '221', '224', '226', '231', '232', '24', '241', '244', '251', '253', '254', '257', '258', '259', '26', '260', '262', '264', '268', '269', '272', '273', '274', '275', '276', '278', '280', '281', '283', '287', '289', '292', '298', '299', '300', '301', '303', '304', '306', '307', '308', '31', '310', '311', '312', '313', '319', '32', '320', '324', '329', '331', '332', '37', '38', '4', '40', '43', '45', '46', '48', '49', '5', '50', '51', '52', '53', '55', '58', '6', '63', '64', '65', '67', '68', '69', '77', '8', '80', '83', '85', '87', '88', '89', '9', '90', '92', '93', '95', '96', '99']
+Fold 2 Validation Cases (35): ['1', '101', '105', '108', '113', '119', '126', '145', '152', '169', '175', '181', '186', '203', '206', '223', '245', '25', '250', '255', '263', '27', '284', '29', '57', '60', '62', '7', '73', '78', '81', '86', '91', '97', '98']
+Fold 2 class distribution:
+  Train: Class 0=47 (33.6%), Class 1=93 (66.4%)
+  Val:   Class 0=11 (31.4%), Class 1=24 (68.6%)
+
+======================================================================
+Fold 2/5
+======================================================================
+Train: 140 patients
+Val: 35 patients
+Fitting clinical preprocessor on training data...
+Built clinical feature dictionaries: train=140, val=35
+Clinical input dimension: 5
+Backbone feature dimension: 512
+Created mean pooling model with backbone resnet18
+Using device: cuda
+Class weights: [1.0, 0.5053763389587402]
+
+Epoch 1/1 - Train Loss: 0.6843, Train Acc: 0.4571, Train AUC: 0.6102 - Val Loss: 0.6900, Val Acc (0.5): 0.3714, Val AUC: 0.6932
+  Train Best Threshold 0.45 → Balanced Acc: 0.5663, Acc: 0.5357, Sensitivity: 0.4731, Specificity: 0.6596, PPV: 0.7333, NPV: 0.3875, F1: 0.5752
+  Val Best Threshold 0.40 → Balanced Acc: 0.6629, Acc: 0.5714, Sensitivity: 0.4167, Specificity: 0.9091, PPV: 0.9091, NPV: 0.4167, F1: 0.5714
+  → New best validation AUC: 0.6932
+Loaded best model with validation AUC: 0.6932

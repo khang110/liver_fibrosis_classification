@@ -1,0 +1,580 @@
+Starting 5-fold cross-validation training for C1 (Mean Pooling)
+Configuration:
+  clinical_csv: data/annotations/175_clinical_5_variables.csv
+  image_root: data/nakagami_full
+  patient_id_column: NO
+  label_column: CL_F2
+  image_pattern: Nakagami_image_*.png
+  n_folds: 5
+  batch_size: 16
+  learning_rate: 1e-05
+  num_epochs: 40
+  early_stopping_patience: 10
+  early_stopping_min_delta: 0.001
+  backbone: efficientnetv2_b0
+  pretrained: True
+  device: cuda
+  num_workers: 4
+  pooling: mean
+  attention_hidden: 128
+  clinical_dim: 32
+  fusion_hidden: 128
+  dropout: 0.4
+  clinical_features: ['AST', 'ALT', 'PLT', 'APRI', 'FIB_4']
+  seed: 2024
+  no_cv: False
+  val_split: 0.2
+  weight_decay: 0.0001
+  label_smoothing: 0.1
+  log_dir: runs/bmode_clinical
+Loading clinical data...
+Loaded 175 patients from clinical data
+Building patient records...
+Building patient records from 175 patients...
+Image root: data/nakagami_full
+Image pattern: Nakagami_image_*.png
+Successfully created 175 patient records
+Created 175 patient records
+Fold 1 class distribution:
+  Train: Class 0=47 (33.6%), Class 1=93 (66.4%)
+  Val:   Class 0=11 (31.4%), Class 1=24 (68.6%)
+
+======================================================================
+Fold 1/5
+======================================================================
+Train: 140 patients
+Val: 35 patients
+Fitting clinical preprocessor on training data...
+Built clinical feature dictionaries: train=140, val=35
+Clinical input dimension: 5
+Backbone feature dimension: 1280
+Created mean pooling model with backbone efficientnetv2_b0
+Using device: cuda
+Class weights: [1.0, 0.5053763389587402]
+Weight decay (L2 reg): 0.0001
+Label smoothing: 0.1
+
+Epoch 1/40 - Train Loss: 0.6912, Train Acc: 0.6071, Train AUC: 0.6445 - Val Loss: 0.7060, Val Acc (0.5): 0.6571, Val AUC: 0.3977
+  Train Best Threshold 0.50 → Balanced Acc: 0.5728, Acc: 0.6071, Sensitivity: 0.6774, Specificity: 0.4681, PPV: 0.7159, NPV: 0.4231, F1: 0.6961
+  Val Best Threshold 0.50 → Balanced Acc: 0.5038, Acc: 0.6571, Sensitivity: 0.9167, Specificity: 0.0909, PPV: 0.6875, NPV: 0.3333, F1: 0.7857
+  → New best validation AUC: 0.3977
+Epoch 2/40 - Train Loss: 0.6973, Train Acc: 0.5571, Train AUC: 0.5738 - Val Loss: 0.7000, Val Acc (0.5): 0.5143, Val AUC: 0.5909
+  Train Best Threshold 0.50 → Balanced Acc: 0.5562, Acc: 0.5571, Sensitivity: 0.5591, Specificity: 0.5532, PPV: 0.7123, NPV: 0.3881, F1: 0.6265
+  Val Best Threshold 0.50 → Balanced Acc: 0.5227, Acc: 0.5143, Sensitivity: 0.5000, Specificity: 0.5455, PPV: 0.7059, NPV: 0.3333, F1: 0.5854
+  → New best validation AUC: 0.5909
+Epoch 3/40 - Train Loss: 0.6986, Train Acc: 0.5714, Train AUC: 0.5605 - Val Loss: 0.7027, Val Acc (0.5): 0.4286, Val AUC: 0.5455
+  Train Best Threshold 0.50 → Balanced Acc: 0.5459, Acc: 0.5714, Sensitivity: 0.6237, Specificity: 0.4681, PPV: 0.6988, NPV: 0.3860, F1: 0.6591
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6857, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6857, NPV: 0.0000, F1: 0.8136
+Epoch 4/40 - Train Loss: 0.6903, Train Acc: 0.5857, Train AUC: 0.6424 - Val Loss: 0.7032, Val Acc (0.5): 0.4571, Val AUC: 0.5758
+  Train Best Threshold 0.50 → Balanced Acc: 0.6040, Acc: 0.5857, Sensitivity: 0.5484, Specificity: 0.6596, PPV: 0.7612, NPV: 0.4247, F1: 0.6375
+  Val Best Threshold 0.50 → Balanced Acc: 0.5057, Acc: 0.4571, Sensitivity: 0.3750, Specificity: 0.6364, PPV: 0.6923, NPV: 0.3182, F1: 0.4865
+Epoch 5/40 - Train Loss: 0.6949, Train Acc: 0.5714, Train AUC: 0.5914 - Val Loss: 0.7023, Val Acc (0.5): 0.5143, Val AUC: 0.5644
+  Train Best Threshold 0.55 → Balanced Acc: 0.5377, Acc: 0.3929, Sensitivity: 0.0968, Specificity: 0.9787, PPV: 0.9000, NPV: 0.3538, F1: 0.1748
+  Val Best Threshold 0.50 → Balanced Acc: 0.5473, Acc: 0.5143, Sensitivity: 0.4583, Specificity: 0.6364, PPV: 0.7333, NPV: 0.3500, F1: 0.5641
+Epoch 6/40 - Train Loss: 0.7002, Train Acc: 0.5571, Train AUC: 0.5388 - Val Loss: 0.7024, Val Acc (0.5): 0.4571, Val AUC: 0.5795
+  Train Best Threshold 0.50 → Balanced Acc: 0.5404, Acc: 0.5571, Sensitivity: 0.5914, Specificity: 0.4894, PPV: 0.6962, NPV: 0.3770, F1: 0.6395
+  Val Best Threshold 0.50 → Balanced Acc: 0.5303, Acc: 0.4571, Sensitivity: 0.3333, Specificity: 0.7273, PPV: 0.7273, NPV: 0.3333, F1: 0.4571
+Epoch 7/40 - Train Loss: 0.7000, Train Acc: 0.5929, Train AUC: 0.5562 - Val Loss: 0.7031, Val Acc (0.5): 0.4571, Val AUC: 0.5833
+  Train Best Threshold 0.50 → Balanced Acc: 0.5620, Acc: 0.5929, Sensitivity: 0.6559, Specificity: 0.4681, PPV: 0.7093, NPV: 0.4074, F1: 0.6816
+  Val Best Threshold 0.50 → Balanced Acc: 0.5303, Acc: 0.4571, Sensitivity: 0.3333, Specificity: 0.7273, PPV: 0.7273, NPV: 0.3333, F1: 0.4571
+Epoch 8/40 - Train Loss: 0.6999, Train Acc: 0.5857, Train AUC: 0.5507 - Val Loss: 0.7015, Val Acc (0.5): 0.4286, Val AUC: 0.5833
+  Train Best Threshold 0.50 → Balanced Acc: 0.5671, Acc: 0.5857, Sensitivity: 0.6237, Specificity: 0.5106, PPV: 0.7160, NPV: 0.4068, F1: 0.6667
+  Val Best Threshold 0.50 → Balanced Acc: 0.5095, Acc: 0.4286, Sensitivity: 0.2917, Specificity: 0.7273, PPV: 0.7000, NPV: 0.3200, F1: 0.4118
+Epoch 9/40 - Train Loss: 0.6973, Train Acc: 0.5429, Train AUC: 0.5747 - Val Loss: 0.7016, Val Acc (0.5): 0.4571, Val AUC: 0.5985
+  Train Best Threshold 0.50 → Balanced Acc: 0.5454, Acc: 0.5429, Sensitivity: 0.5376, Specificity: 0.5532, PPV: 0.7042, NPV: 0.3768, F1: 0.6098
+  Val Best Threshold 0.50 → Balanced Acc: 0.5303, Acc: 0.4571, Sensitivity: 0.3333, Specificity: 0.7273, PPV: 0.7273, NPV: 0.3333, F1: 0.4571
+  → New best validation AUC: 0.5985
+Epoch 10/40 - Train Loss: 0.6946, Train Acc: 0.5786, Train AUC: 0.6003 - Val Loss: 0.7029, Val Acc (0.5): 0.4286, Val AUC: 0.5758
+  Train Best Threshold 0.50 → Balanced Acc: 0.5881, Acc: 0.5786, Sensitivity: 0.5591, Specificity: 0.6170, PPV: 0.7429, NPV: 0.4143, F1: 0.6380
+  Val Best Threshold 0.50 → Balanced Acc: 0.5095, Acc: 0.4286, Sensitivity: 0.2917, Specificity: 0.7273, PPV: 0.7000, NPV: 0.3200, F1: 0.4118
+Epoch 11/40 - Train Loss: 0.6889, Train Acc: 0.6071, Train AUC: 0.6600 - Val Loss: 0.7011, Val Acc (0.5): 0.4286, Val AUC: 0.5985
+  Train Best Threshold 0.50 → Balanced Acc: 0.6254, Acc: 0.6071, Sensitivity: 0.5699, Specificity: 0.6809, PPV: 0.7794, NPV: 0.4444, F1: 0.6584
+  Val Best Threshold 0.50 → Balanced Acc: 0.5095, Acc: 0.4286, Sensitivity: 0.2917, Specificity: 0.7273, PPV: 0.7000, NPV: 0.3200, F1: 0.4118
+Epoch 12/40 - Train Loss: 0.6985, Train Acc: 0.4857, Train AUC: 0.5530 - Val Loss: 0.7019, Val Acc (0.5): 0.4286, Val AUC: 0.5833
+  Train Best Threshold 0.45 → Balanced Acc: 0.5210, Acc: 0.6643, Sensitivity: 0.9570, Specificity: 0.0851, PPV: 0.6742, NPV: 0.5000, F1: 0.7911
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6857, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6857, NPV: 0.0000, F1: 0.8136
+Epoch 13/40 - Train Loss: 0.6977, Train Acc: 0.5500, Train AUC: 0.5685 - Val Loss: 0.7022, Val Acc (0.5): 0.3714, Val AUC: 0.5871
+  Train Best Threshold 0.50 → Balanced Acc: 0.5561, Acc: 0.5500, Sensitivity: 0.5376, Specificity: 0.5745, PPV: 0.7143, NPV: 0.3857, F1: 0.6135
+  Val Best Threshold 0.45 → Balanced Acc: 0.5455, Acc: 0.7143, Sensitivity: 1.0000, Specificity: 0.0909, PPV: 0.7059, NPV: 1.0000, F1: 0.8276
+Epoch 14/40 - Train Loss: 0.6912, Train Acc: 0.5571, Train AUC: 0.6266 - Val Loss: 0.7005, Val Acc (0.5): 0.4571, Val AUC: 0.5871
+  Train Best Threshold 0.50 → Balanced Acc: 0.5720, Acc: 0.5571, Sensitivity: 0.5269, Specificity: 0.6170, PPV: 0.7313, NPV: 0.3973, F1: 0.6125
+  Val Best Threshold 0.50 → Balanced Acc: 0.5303, Acc: 0.4571, Sensitivity: 0.3333, Specificity: 0.7273, PPV: 0.7273, NPV: 0.3333, F1: 0.4571
+Epoch 15/40 - Train Loss: 0.6961, Train Acc: 0.5857, Train AUC: 0.5763 - Val Loss: 0.7005, Val Acc (0.5): 0.4571, Val AUC: 0.5909
+  Train Best Threshold 0.50 → Balanced Acc: 0.5935, Acc: 0.5857, Sensitivity: 0.5699, Specificity: 0.6170, PPV: 0.7465, NPV: 0.4203, F1: 0.6463
+  Val Best Threshold 0.45 → Balanced Acc: 0.5455, Acc: 0.7143, Sensitivity: 1.0000, Specificity: 0.0909, PPV: 0.7059, NPV: 1.0000, F1: 0.8276
+Epoch 16/40 - Train Loss: 0.6934, Train Acc: 0.5714, Train AUC: 0.6243 - Val Loss: 0.6986, Val Acc (0.5): 0.4571, Val AUC: 0.6023
+  Train Best Threshold 0.50 → Balanced Acc: 0.5880, Acc: 0.5714, Sensitivity: 0.5376, Specificity: 0.6383, PPV: 0.7463, NPV: 0.4110, F1: 0.6250
+  Val Best Threshold 0.50 → Balanced Acc: 0.5057, Acc: 0.4571, Sensitivity: 0.3750, Specificity: 0.6364, PPV: 0.6923, NPV: 0.3182, F1: 0.4865
+  → New best validation AUC: 0.6023
+Epoch 17/40 - Train Loss: 0.6907, Train Acc: 0.6000, Train AUC: 0.6340 - Val Loss: 0.6978, Val Acc (0.5): 0.5143, Val AUC: 0.6174
+  Train Best Threshold 0.50 → Balanced Acc: 0.5884, Acc: 0.6000, Sensitivity: 0.6237, Specificity: 0.5532, PPV: 0.7342, NPV: 0.4262, F1: 0.6744
+  Val Best Threshold 0.50 → Balanced Acc: 0.5720, Acc: 0.5143, Sensitivity: 0.4167, Specificity: 0.7273, PPV: 0.7692, NPV: 0.3636, F1: 0.5405
+  → New best validation AUC: 0.6174
+Epoch 18/40 - Train Loss: 0.6914, Train Acc: 0.5786, Train AUC: 0.6351 - Val Loss: 0.6994, Val Acc (0.5): 0.5143, Val AUC: 0.5947
+  Train Best Threshold 0.50 → Balanced Acc: 0.5933, Acc: 0.5786, Sensitivity: 0.5484, Specificity: 0.6383, PPV: 0.7500, NPV: 0.4167, F1: 0.6335
+  Val Best Threshold 0.45 → Balanced Acc: 0.5909, Acc: 0.7429, Sensitivity: 1.0000, Specificity: 0.1818, PPV: 0.7273, NPV: 1.0000, F1: 0.8421
+Epoch 19/40 - Train Loss: 0.6878, Train Acc: 0.6000, Train AUC: 0.6463 - Val Loss: 0.6980, Val Acc (0.5): 0.5143, Val AUC: 0.6061
+  Train Best Threshold 0.50 → Balanced Acc: 0.6305, Acc: 0.6000, Sensitivity: 0.5376, Specificity: 0.7234, PPV: 0.7937, NPV: 0.4416, F1: 0.6410
+  Val Best Threshold 0.45 → Balanced Acc: 0.5909, Acc: 0.7429, Sensitivity: 1.0000, Specificity: 0.1818, PPV: 0.7273, NPV: 1.0000, F1: 0.8421
+Epoch 20/40 - Train Loss: 0.6846, Train Acc: 0.6643, Train AUC: 0.7085 - Val Loss: 0.6966, Val Acc (0.5): 0.5143, Val AUC: 0.6212
+  Train Best Threshold 0.50 → Balanced Acc: 0.6789, Acc: 0.6643, Sensitivity: 0.6344, Specificity: 0.7234, PPV: 0.8194, NPV: 0.5000, F1: 0.7152
+  Val Best Threshold 0.45 → Balanced Acc: 0.5909, Acc: 0.7429, Sensitivity: 1.0000, Specificity: 0.1818, PPV: 0.7273, NPV: 1.0000, F1: 0.8421
+  → New best validation AUC: 0.6212
+Epoch 21/40 - Train Loss: 0.6851, Train Acc: 0.6357, Train AUC: 0.6939 - Val Loss: 0.6960, Val Acc (0.5): 0.5143, Val AUC: 0.6136
+  Train Best Threshold 0.50 → Balanced Acc: 0.6627, Acc: 0.6357, Sensitivity: 0.5806, Specificity: 0.7447, PPV: 0.8182, NPV: 0.4730, F1: 0.6792
+  Val Best Threshold 0.45 → Balanced Acc: 0.5909, Acc: 0.7429, Sensitivity: 1.0000, Specificity: 0.1818, PPV: 0.7273, NPV: 1.0000, F1: 0.8421
+Epoch 22/40 - Train Loss: 0.6933, Train Acc: 0.5571, Train AUC: 0.6250 - Val Loss: 0.6955, Val Acc (0.5): 0.5714, Val AUC: 0.6477
+  Train Best Threshold 0.50 → Balanced Acc: 0.5930, Acc: 0.5571, Sensitivity: 0.4839, Specificity: 0.7021, PPV: 0.7627, NPV: 0.4074, F1: 0.5921
+  Val Best Threshold 0.45 → Balanced Acc: 0.5909, Acc: 0.7429, Sensitivity: 1.0000, Specificity: 0.1818, PPV: 0.7273, NPV: 1.0000, F1: 0.8421
+  → New best validation AUC: 0.6477
+Epoch 23/40 - Train Loss: 0.6897, Train Acc: 0.5643, Train AUC: 0.6445 - Val Loss: 0.6941, Val Acc (0.5): 0.6571, Val AUC: 0.6553
+  Train Best Threshold 0.50 → Balanced Acc: 0.6089, Acc: 0.5643, Sensitivity: 0.4731, Specificity: 0.7447, PPV: 0.7857, NPV: 0.4167, F1: 0.5906
+  Val Best Threshold 0.50 → Balanced Acc: 0.6515, Acc: 0.6571, Sensitivity: 0.6667, Specificity: 0.6364, PPV: 0.8000, NPV: 0.4667, F1: 0.7273
+  → New best validation AUC: 0.6553
+Epoch 24/40 - Train Loss: 0.6827, Train Acc: 0.6357, Train AUC: 0.7175 - Val Loss: 0.6934, Val Acc (0.5): 0.6571, Val AUC: 0.6705
+  Train Best Threshold 0.50 → Balanced Acc: 0.6574, Acc: 0.6357, Sensitivity: 0.5914, Specificity: 0.7234, PPV: 0.8088, NPV: 0.4722, F1: 0.6832
+  Val Best Threshold 0.50 → Balanced Acc: 0.6515, Acc: 0.6571, Sensitivity: 0.6667, Specificity: 0.6364, PPV: 0.8000, NPV: 0.4667, F1: 0.7273
+  → New best validation AUC: 0.6705
+Epoch 25/40 - Train Loss: 0.6973, Train Acc: 0.4714, Train AUC: 0.5495 - Val Loss: 0.6932, Val Acc (0.5): 0.5714, Val AUC: 0.6705
+  Train Best Threshold 0.55 → Balanced Acc: 0.5162, Acc: 0.3643, Sensitivity: 0.0538, Specificity: 0.9787, PPV: 0.8333, NPV: 0.3433, F1: 0.1010
+  Val Best Threshold 0.45 → Balanced Acc: 0.5909, Acc: 0.7429, Sensitivity: 1.0000, Specificity: 0.1818, PPV: 0.7273, NPV: 1.0000, F1: 0.8421
+Epoch 26/40 - Train Loss: 0.6921, Train Acc: 0.5214, Train AUC: 0.6227 - Val Loss: 0.6930, Val Acc (0.5): 0.6286, Val AUC: 0.6591
+  Train Best Threshold 0.45 → Balanced Acc: 0.5531, Acc: 0.6929, Sensitivity: 0.9785, Specificity: 0.1277, PPV: 0.6894, NPV: 0.7500, F1: 0.8089
+  Val Best Threshold 0.45 → Balanced Acc: 0.6364, Acc: 0.7714, Sensitivity: 1.0000, Specificity: 0.2727, PPV: 0.7500, NPV: 1.0000, F1: 0.8571
+Epoch 27/40 - Train Loss: 0.6773, Train Acc: 0.6714, Train AUC: 0.7589 - Val Loss: 0.6916, Val Acc (0.5): 0.6286, Val AUC: 0.6818
+  Train Best Threshold 0.50 → Balanced Acc: 0.7159, Acc: 0.6714, Sensitivity: 0.5806, Specificity: 0.8511, PPV: 0.8852, NPV: 0.5063, F1: 0.7013
+  Val Best Threshold 0.45 → Balanced Acc: 0.6364, Acc: 0.7714, Sensitivity: 1.0000, Specificity: 0.2727, PPV: 0.7500, NPV: 1.0000, F1: 0.8571
+  → New best validation AUC: 0.6818
+Epoch 28/40 - Train Loss: 0.6834, Train Acc: 0.6214, Train AUC: 0.6891 - Val Loss: 0.6905, Val Acc (0.5): 0.6286, Val AUC: 0.6856
+  Train Best Threshold 0.50 → Balanced Acc: 0.6414, Acc: 0.6214, Sensitivity: 0.5806, Specificity: 0.7021, PPV: 0.7941, NPV: 0.4583, F1: 0.6708
+  Val Best Threshold 0.50 → Balanced Acc: 0.6553, Acc: 0.6286, Sensitivity: 0.5833, Specificity: 0.7273, PPV: 0.8235, NPV: 0.4444, F1: 0.6829
+  → New best validation AUC: 0.6856
+Epoch 29/40 - Train Loss: 0.6793, Train Acc: 0.6286, Train AUC: 0.7236 - Val Loss: 0.6896, Val Acc (0.5): 0.6000, Val AUC: 0.7045
+  Train Best Threshold 0.50 → Balanced Acc: 0.6625, Acc: 0.6286, Sensitivity: 0.5591, Specificity: 0.7660, PPV: 0.8254, NPV: 0.4675, F1: 0.6667
+  Val Best Threshold 0.45 → Balanced Acc: 0.6364, Acc: 0.7714, Sensitivity: 1.0000, Specificity: 0.2727, PPV: 0.7500, NPV: 1.0000, F1: 0.8571
+  → New best validation AUC: 0.7045
+Epoch 30/40 - Train Loss: 0.6875, Train Acc: 0.6143, Train AUC: 0.6541 - Val Loss: 0.6895, Val Acc (0.5): 0.6000, Val AUC: 0.6932
+  Train Best Threshold 0.50 → Balanced Acc: 0.6518, Acc: 0.6143, Sensitivity: 0.5376, Specificity: 0.7660, PPV: 0.8197, NPV: 0.4557, F1: 0.6494
+  Val Best Threshold 0.45 → Balanced Acc: 0.6155, Acc: 0.7429, Sensitivity: 0.9583, Specificity: 0.2727, PPV: 0.7419, NPV: 0.7500, F1: 0.8364
+Epoch 31/40 - Train Loss: 0.6793, Train Acc: 0.6429, Train AUC: 0.7111 - Val Loss: 0.6884, Val Acc (0.5): 0.5714, Val AUC: 0.7045
+  Train Best Threshold 0.50 → Balanced Acc: 0.6575, Acc: 0.6429, Sensitivity: 0.6129, Specificity: 0.7021, PPV: 0.8028, NPV: 0.4783, F1: 0.6951
+  Val Best Threshold 0.45 → Balanced Acc: 0.6155, Acc: 0.7429, Sensitivity: 0.9583, Specificity: 0.2727, PPV: 0.7419, NPV: 0.7500, F1: 0.8364
+Epoch 32/40 - Train Loss: 0.6841, Train Acc: 0.5857, Train AUC: 0.6635 - Val Loss: 0.6870, Val Acc (0.5): 0.6000, Val AUC: 0.7159
+  Train Best Threshold 0.50 → Balanced Acc: 0.6092, Acc: 0.5857, Sensitivity: 0.5376, Specificity: 0.6809, PPV: 0.7692, NPV: 0.4267, F1: 0.6329
+  Val Best Threshold 0.45 → Balanced Acc: 0.6155, Acc: 0.7429, Sensitivity: 0.9583, Specificity: 0.2727, PPV: 0.7419, NPV: 0.7500, F1: 0.8364
+  → New best validation AUC: 0.7159
+Epoch 33/40 - Train Loss: 0.6724, Train Acc: 0.6500, Train AUC: 0.7637 - Val Loss: 0.6859, Val Acc (0.5): 0.6000, Val AUC: 0.7159
+  Train Best Threshold 0.50 → Balanced Acc: 0.6839, Acc: 0.6500, Sensitivity: 0.5806, Specificity: 0.7872, PPV: 0.8438, NPV: 0.4868, F1: 0.6879
+  Val Best Threshold 0.50 → Balanced Acc: 0.6345, Acc: 0.6000, Sensitivity: 0.5417, Specificity: 0.7273, PPV: 0.8125, NPV: 0.4211, F1: 0.6500
+Epoch 34/40 - Train Loss: 0.6889, Train Acc: 0.5929, Train AUC: 0.6250 - Val Loss: 0.6831, Val Acc (0.5): 0.6000, Val AUC: 0.7348
+  Train Best Threshold 0.50 → Balanced Acc: 0.6041, Acc: 0.5929, Sensitivity: 0.5699, Specificity: 0.6383, PPV: 0.7571, NPV: 0.4286, F1: 0.6503
+  Val Best Threshold 0.50 → Balanced Acc: 0.6345, Acc: 0.6000, Sensitivity: 0.5417, Specificity: 0.7273, PPV: 0.8125, NPV: 0.4211, F1: 0.6500
+  → New best validation AUC: 0.7348
+Epoch 35/40 - Train Loss: 0.6768, Train Acc: 0.6571, Train AUC: 0.7161 - Val Loss: 0.6833, Val Acc (0.5): 0.6000, Val AUC: 0.7311
+  Train Best Threshold 0.50 → Balanced Acc: 0.6735, Acc: 0.6571, Sensitivity: 0.6237, Specificity: 0.7234, PPV: 0.8169, NPV: 0.4928, F1: 0.7073
+  Val Best Threshold 0.50 → Balanced Acc: 0.6345, Acc: 0.6000, Sensitivity: 0.5417, Specificity: 0.7273, PPV: 0.8125, NPV: 0.4211, F1: 0.6500
+Epoch 36/40 - Train Loss: 0.6736, Train Acc: 0.6571, Train AUC: 0.7488 - Val Loss: 0.6819, Val Acc (0.5): 0.6857, Val AUC: 0.7348
+  Train Best Threshold 0.50 → Balanced Acc: 0.6841, Acc: 0.6571, Sensitivity: 0.6022, Specificity: 0.7660, PPV: 0.8358, NPV: 0.4932, F1: 0.7000
+  Val Best Threshold 0.50 → Balanced Acc: 0.6970, Acc: 0.6857, Sensitivity: 0.6667, Specificity: 0.7273, PPV: 0.8421, NPV: 0.5000, F1: 0.7442
+Epoch 37/40 - Train Loss: 0.6710, Train Acc: 0.6786, Train AUC: 0.7451 - Val Loss: 0.6823, Val Acc (0.5): 0.6857, Val AUC: 0.7386
+  Train Best Threshold 0.50 → Balanced Acc: 0.7002, Acc: 0.6786, Sensitivity: 0.6344, Specificity: 0.7660, PPV: 0.8429, NPV: 0.5143, F1: 0.7239
+  Val Best Threshold 0.50 → Balanced Acc: 0.6970, Acc: 0.6857, Sensitivity: 0.6667, Specificity: 0.7273, PPV: 0.8421, NPV: 0.5000, F1: 0.7442
+  → New best validation AUC: 0.7386
+Epoch 38/40 - Train Loss: 0.6759, Train Acc: 0.6357, Train AUC: 0.7312 - Val Loss: 0.6792, Val Acc (0.5): 0.6857, Val AUC: 0.7386
+  Train Best Threshold 0.50 → Balanced Acc: 0.6837, Acc: 0.6357, Sensitivity: 0.5376, Specificity: 0.8298, PPV: 0.8621, NPV: 0.4756, F1: 0.6623
+  Val Best Threshold 0.50 → Balanced Acc: 0.6970, Acc: 0.6857, Sensitivity: 0.6667, Specificity: 0.7273, PPV: 0.8421, NPV: 0.5000, F1: 0.7442
+Epoch 39/40 - Train Loss: 0.6700, Train Acc: 0.6714, Train AUC: 0.7660 - Val Loss: 0.6783, Val Acc (0.5): 0.6857, Val AUC: 0.7424
+  Train Best Threshold 0.50 → Balanced Acc: 0.7001, Acc: 0.6714, Sensitivity: 0.6129, Specificity: 0.7872, PPV: 0.8507, NPV: 0.5068, F1: 0.7125
+  Val Best Threshold 0.50 → Balanced Acc: 0.6970, Acc: 0.6857, Sensitivity: 0.6667, Specificity: 0.7273, PPV: 0.8421, NPV: 0.5000, F1: 0.7442
+  → New best validation AUC: 0.7424
+Epoch 40/40 - Train Loss: 0.6802, Train Acc: 0.5714, Train AUC: 0.6630 - Val Loss: 0.6777, Val Acc (0.5): 0.6857, Val AUC: 0.7424
+  Train Best Threshold 0.55 → Balanced Acc: 0.5968, Acc: 0.4643, Sensitivity: 0.1935, Specificity: 1.0000, PPV: 1.0000, NPV: 0.3852, F1: 0.3243
+  Val Best Threshold 0.50 → Balanced Acc: 0.6970, Acc: 0.6857, Sensitivity: 0.6667, Specificity: 0.7273, PPV: 0.8421, NPV: 0.5000, F1: 0.7442
+Loaded best model with validation AUC: 0.7424
+Final Train Results (Best Model) at epoch 39 - Loss: 0.6712, Accuracy: 0.6571, AUC: 0.7852
+Final Val Results (Best Model) at epoch 39 - Loss: 0.6783, Accuracy: 0.6857, AUC: 0.7424
+Train Best Threshold: 0.50 | Balanced Acc: 0.7104 | Acc: 0.6571 | Sensitivity: 0.5484 | Specificity: 0.8723 | PPV: 0.8947 | NPV: 0.4940 | F1: 0.6800
+Train Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[41  6]
+ [42 51]]
+Val Best Threshold: 0.50 | Balanced Acc: 0.6970 | Acc: 0.6857 | Sensitivity: 0.6667 | Specificity: 0.7273 | PPV: 0.8421 | NPV: 0.5000 | F1: 0.7442
+Val Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[ 8  3]
+ [ 8 16]]
+Fold 2 class distribution:
+  Train: Class 0=47 (33.6%), Class 1=93 (66.4%)
+  Val:   Class 0=11 (31.4%), Class 1=24 (68.6%)
+
+======================================================================
+Fold 2/5
+======================================================================
+Train: 140 patients
+Val: 35 patients
+Fitting clinical preprocessor on training data...
+Built clinical feature dictionaries: train=140, val=35
+Clinical input dimension: 5
+Backbone feature dimension: 1280
+Created mean pooling model with backbone efficientnetv2_b0
+Using device: cuda
+Class weights: [1.0, 0.5053763389587402]
+Weight decay (L2 reg): 0.0001
+Label smoothing: 0.1
+
+Epoch 1/40 - Train Loss: 0.7076, Train Acc: 0.6643, Train AUC: 0.5074 - Val Loss: 0.6865, Val Acc (0.5): 0.6857, Val AUC: 0.4394
+  Train Best Threshold 0.50 → Balanced Acc: 0.5158, Acc: 0.6643, Sensitivity: 0.9677, Specificity: 0.0638, PPV: 0.6716, NPV: 0.5000, F1: 0.7930
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6857, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6857, NPV: 0.0000, F1: 0.8136
+  → New best validation AUC: 0.4394
+Epoch 2/40 - Train Loss: 0.7050, Train Acc: 0.6929, Train AUC: 0.5196 - Val Loss: 0.6901, Val Acc (0.5): 0.6857, Val AUC: 0.5227
+  Train Best Threshold 0.50 → Balanced Acc: 0.5636, Acc: 0.6929, Sensitivity: 0.9570, Specificity: 0.1702, PPV: 0.6953, NPV: 0.6667, F1: 0.8054
+  Val Best Threshold 0.55 → Balanced Acc: 0.5720, Acc: 0.5143, Sensitivity: 0.4167, Specificity: 0.7273, PPV: 0.7692, NPV: 0.3636, F1: 0.5405
+  → New best validation AUC: 0.5227
+Epoch 3/40 - Train Loss: 0.7081, Train Acc: 0.6143, Train AUC: 0.4830 - Val Loss: 0.6891, Val Acc (0.5): 0.6857, Val AUC: 0.5758
+  Train Best Threshold 0.55 → Balanced Acc: 0.5226, Acc: 0.4357, Sensitivity: 0.2581, Specificity: 0.7872, PPV: 0.7059, NPV: 0.3491, F1: 0.3780
+  Val Best Threshold 0.55 → Balanced Acc: 0.5795, Acc: 0.4571, Sensitivity: 0.2500, Specificity: 0.9091, PPV: 0.8571, NPV: 0.3571, F1: 0.3871
+  → New best validation AUC: 0.5758
+Epoch 4/40 - Train Loss: 0.7085, Train Acc: 0.5929, Train AUC: 0.4729 - Val Loss: 0.6899, Val Acc (0.5): 0.6857, Val AUC: 0.5795
+  Train Best Threshold 0.60 → Balanced Acc: 0.5054, Acc: 0.3429, Sensitivity: 0.0108, Specificity: 1.0000, PPV: 1.0000, NPV: 0.3381, F1: 0.0213
+  Val Best Threshold 0.55 → Balanced Acc: 0.5133, Acc: 0.4000, Sensitivity: 0.2083, Specificity: 0.8182, PPV: 0.7143, NPV: 0.3214, F1: 0.3226
+  → New best validation AUC: 0.5795
+Epoch 5/40 - Train Loss: 0.7018, Train Acc: 0.6071, Train AUC: 0.5555 - Val Loss: 0.6918, Val Acc (0.5): 0.6857, Val AUC: 0.5417
+  Train Best Threshold 0.55 → Balanced Acc: 0.5010, Acc: 0.4000, Sensitivity: 0.1935, Specificity: 0.8085, PPV: 0.6667, NPV: 0.3363, F1: 0.3000
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6857, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6857, NPV: 0.0000, F1: 0.8136
+Epoch 6/40 - Train Loss: 0.7056, Train Acc: 0.6214, Train AUC: 0.4916 - Val Loss: 0.6922, Val Acc (0.5): 0.6857, Val AUC: 0.5720
+  Train Best Threshold 0.50 → Balanced Acc: 0.5046, Acc: 0.6214, Sensitivity: 0.8602, Specificity: 0.1489, PPV: 0.6667, NPV: 0.3500, F1: 0.7512
+  Val Best Threshold 0.55 → Balanced Acc: 0.5379, Acc: 0.4000, Sensitivity: 0.1667, Specificity: 0.9091, PPV: 0.8000, NPV: 0.3333, F1: 0.2759
+Epoch 7/40 - Train Loss: 0.7058, Train Acc: 0.5643, Train AUC: 0.4873 - Val Loss: 0.6930, Val Acc (0.5): 0.6857, Val AUC: 0.5568
+  Train Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6643, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6643, NPV: 0.0000, F1: 0.7983
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6857, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6857, NPV: 0.0000, F1: 0.8136
+Epoch 8/40 - Train Loss: 0.7058, Train Acc: 0.5429, Train AUC: 0.4697 - Val Loss: 0.6921, Val Acc (0.5): 0.6857, Val AUC: 0.5644
+  Train Best Threshold 0.55 → Balanced Acc: 0.5487, Acc: 0.4214, Sensitivity: 0.1613, Specificity: 0.9362, PPV: 0.8333, NPV: 0.3607, F1: 0.2703
+  Val Best Threshold 0.55 → Balanced Acc: 0.5170, Acc: 0.3714, Sensitivity: 0.1250, Specificity: 0.9091, PPV: 0.7500, NPV: 0.3226, F1: 0.2143
+Epoch 9/40 - Train Loss: 0.7007, Train Acc: 0.6071, Train AUC: 0.5644 - Val Loss: 0.6928, Val Acc (0.5): 0.6857, Val AUC: 0.5720
+  Train Best Threshold 0.50 → Balanced Acc: 0.5096, Acc: 0.6071, Sensitivity: 0.8065, Specificity: 0.2128, PPV: 0.6696, NPV: 0.3571, F1: 0.7317
+  Val Best Threshold 0.55 → Balanced Acc: 0.5170, Acc: 0.3714, Sensitivity: 0.1250, Specificity: 0.9091, PPV: 0.7500, NPV: 0.3226, F1: 0.2143
+Epoch 10/40 - Train Loss: 0.6958, Train Acc: 0.6286, Train AUC: 0.6237 - Val Loss: 0.6931, Val Acc (0.5): 0.6857, Val AUC: 0.5606
+  Train Best Threshold 0.50 → Balanced Acc: 0.5573, Acc: 0.6286, Sensitivity: 0.7742, Specificity: 0.3404, PPV: 0.6990, NPV: 0.4324, F1: 0.7347
+  Val Best Threshold 0.55 → Balanced Acc: 0.5379, Acc: 0.4000, Sensitivity: 0.1667, Specificity: 0.9091, PPV: 0.8000, NPV: 0.3333, F1: 0.2759
+Epoch 11/40 - Train Loss: 0.6983, Train Acc: 0.6071, Train AUC: 0.5752 - Val Loss: 0.6928, Val Acc (0.5): 0.6857, Val AUC: 0.5720
+  Train Best Threshold 0.55 → Balanced Acc: 0.5325, Acc: 0.3929, Sensitivity: 0.1075, Specificity: 0.9574, PPV: 0.8333, NPV: 0.3516, F1: 0.1905
+  Val Best Threshold 0.55 → Balanced Acc: 0.5379, Acc: 0.4000, Sensitivity: 0.1667, Specificity: 0.9091, PPV: 0.8000, NPV: 0.3333, F1: 0.2759
+Epoch 12/40 - Train Loss: 0.6918, Train Acc: 0.6714, Train AUC: 0.6609 - Val Loss: 0.6926, Val Acc (0.5): 0.6857, Val AUC: 0.5871
+  Train Best Threshold 0.50 → Balanced Acc: 0.6054, Acc: 0.6714, Sensitivity: 0.8065, Specificity: 0.4043, PPV: 0.7282, NPV: 0.5135, F1: 0.7653
+  Val Best Threshold 0.55 → Balanced Acc: 0.5379, Acc: 0.4000, Sensitivity: 0.1667, Specificity: 0.9091, PPV: 0.8000, NPV: 0.3333, F1: 0.2759
+  → New best validation AUC: 0.5871
+Epoch 13/40 - Train Loss: 0.7001, Train Acc: 0.5786, Train AUC: 0.5445 - Val Loss: 0.6931, Val Acc (0.5): 0.6857, Val AUC: 0.5606
+  Train Best Threshold 0.55 → Balanced Acc: 0.5217, Acc: 0.3786, Sensitivity: 0.0860, Specificity: 0.9574, PPV: 0.8000, NPV: 0.3462, F1: 0.1553
+  Val Best Threshold 0.55 → Balanced Acc: 0.5379, Acc: 0.4000, Sensitivity: 0.1667, Specificity: 0.9091, PPV: 0.8000, NPV: 0.3333, F1: 0.2759
+Epoch 14/40 - Train Loss: 0.6883, Train Acc: 0.6429, Train AUC: 0.6900 - Val Loss: 0.6934, Val Acc (0.5): 0.6857, Val AUC: 0.5644
+  Train Best Threshold 0.50 → Balanced Acc: 0.6154, Acc: 0.6429, Sensitivity: 0.6989, Specificity: 0.5319, PPV: 0.7471, NPV: 0.4717, F1: 0.7222
+  Val Best Threshold 0.55 → Balanced Acc: 0.5379, Acc: 0.4000, Sensitivity: 0.1667, Specificity: 0.9091, PPV: 0.8000, NPV: 0.3333, F1: 0.2759
+Epoch 15/40 - Train Loss: 0.6955, Train Acc: 0.6214, Train AUC: 0.6136 - Val Loss: 0.6944, Val Acc (0.5): 0.6571, Val AUC: 0.5795
+  Train Best Threshold 0.50 → Balanced Acc: 0.5625, Acc: 0.6214, Sensitivity: 0.7419, Specificity: 0.3830, PPV: 0.7041, NPV: 0.4286, F1: 0.7225
+  Val Best Threshold 0.50 → Balanced Acc: 0.5284, Acc: 0.6571, Sensitivity: 0.8750, Specificity: 0.1818, PPV: 0.7000, NPV: 0.4000, F1: 0.7778
+Epoch 16/40 - Train Loss: 0.6984, Train Acc: 0.5571, Train AUC: 0.5447 - Val Loss: 0.6938, Val Acc (0.5): 0.6857, Val AUC: 0.5833
+  Train Best Threshold 0.55 → Balanced Acc: 0.5432, Acc: 0.4071, Sensitivity: 0.1290, Specificity: 0.9574, PPV: 0.8571, NPV: 0.3571, F1: 0.2243
+  Val Best Threshold 0.50 → Balanced Acc: 0.5739, Acc: 0.6857, Sensitivity: 0.8750, Specificity: 0.2727, PPV: 0.7241, NPV: 0.5000, F1: 0.7925
+Epoch 17/40 - Train Loss: 0.6973, Train Acc: 0.6071, Train AUC: 0.5873 - Val Loss: 0.6932, Val Acc (0.5): 0.7143, Val AUC: 0.5871
+  Train Best Threshold 0.50 → Balanced Acc: 0.5728, Acc: 0.6071, Sensitivity: 0.6774, Specificity: 0.4681, PPV: 0.7159, NPV: 0.4231, F1: 0.6961
+  Val Best Threshold 0.50 → Balanced Acc: 0.5947, Acc: 0.7143, Sensitivity: 0.9167, Specificity: 0.2727, PPV: 0.7333, NPV: 0.6000, F1: 0.8148
+Epoch 18/40 - Train Loss: 0.7002, Train Acc: 0.5429, Train AUC: 0.5511 - Val Loss: 0.6940, Val Acc (0.5): 0.6857, Val AUC: 0.5909
+  Train Best Threshold 0.50 → Balanced Acc: 0.5086, Acc: 0.5429, Sensitivity: 0.6129, Specificity: 0.4043, PPV: 0.6706, NPV: 0.3455, F1: 0.6404
+  Val Best Threshold 0.50 → Balanced Acc: 0.5739, Acc: 0.6857, Sensitivity: 0.8750, Specificity: 0.2727, PPV: 0.7241, NPV: 0.5000, F1: 0.7925
+  → New best validation AUC: 0.5909
+Epoch 19/40 - Train Loss: 0.6838, Train Acc: 0.6929, Train AUC: 0.7264 - Val Loss: 0.6956, Val Acc (0.5): 0.6286, Val AUC: 0.5947
+  Train Best Threshold 0.50 → Balanced Acc: 0.6741, Acc: 0.6929, Sensitivity: 0.7312, Specificity: 0.6170, PPV: 0.7907, NPV: 0.5370, F1: 0.7598
+  Val Best Threshold 0.55 → Balanced Acc: 0.5379, Acc: 0.4000, Sensitivity: 0.1667, Specificity: 0.9091, PPV: 0.8000, NPV: 0.3333, F1: 0.2759
+  → New best validation AUC: 0.5947
+Epoch 20/40 - Train Loss: 0.6889, Train Acc: 0.6500, Train AUC: 0.6747 - Val Loss: 0.6952, Val Acc (0.5): 0.6286, Val AUC: 0.5947
+  Train Best Threshold 0.50 → Balanced Acc: 0.6366, Acc: 0.6500, Sensitivity: 0.6774, Specificity: 0.5957, PPV: 0.7683, NPV: 0.4828, F1: 0.7200
+  Val Best Threshold 0.55 → Balanced Acc: 0.5379, Acc: 0.4000, Sensitivity: 0.1667, Specificity: 0.9091, PPV: 0.8000, NPV: 0.3333, F1: 0.2759
+Epoch 21/40 - Train Loss: 0.6905, Train Acc: 0.6429, Train AUC: 0.6728 - Val Loss: 0.6946, Val Acc (0.5): 0.6286, Val AUC: 0.5909
+  Train Best Threshold 0.50 → Balanced Acc: 0.6312, Acc: 0.6429, Sensitivity: 0.6667, Specificity: 0.5957, PPV: 0.7654, NPV: 0.4746, F1: 0.7126
+  Val Best Threshold 0.55 → Balanced Acc: 0.5379, Acc: 0.4000, Sensitivity: 0.1667, Specificity: 0.9091, PPV: 0.8000, NPV: 0.3333, F1: 0.2759
+Epoch 22/40 - Train Loss: 0.6897, Train Acc: 0.6500, Train AUC: 0.6582 - Val Loss: 0.6938, Val Acc (0.5): 0.6571, Val AUC: 0.5833
+  Train Best Threshold 0.50 → Balanced Acc: 0.6208, Acc: 0.6500, Sensitivity: 0.7097, Specificity: 0.5319, PPV: 0.7500, NPV: 0.4808, F1: 0.7293
+  Val Best Threshold 0.55 → Balanced Acc: 0.5587, Acc: 0.4286, Sensitivity: 0.2083, Specificity: 0.9091, PPV: 0.8333, NPV: 0.3448, F1: 0.3333
+Epoch 23/40 - Train Loss: 0.6844, Train Acc: 0.6429, Train AUC: 0.6994 - Val Loss: 0.6932, Val Acc (0.5): 0.6571, Val AUC: 0.5909
+  Train Best Threshold 0.50 → Balanced Acc: 0.6259, Acc: 0.6429, Sensitivity: 0.6774, Specificity: 0.5745, PPV: 0.7590, NPV: 0.4737, F1: 0.7159
+  Val Best Threshold 0.50 → Balanced Acc: 0.5530, Acc: 0.6571, Sensitivity: 0.8333, Specificity: 0.2727, PPV: 0.7143, NPV: 0.4286, F1: 0.7692
+Epoch 24/40 - Train Loss: 0.6850, Train Acc: 0.6571, Train AUC: 0.6937 - Val Loss: 0.6942, Val Acc (0.5): 0.6286, Val AUC: 0.5795
+  Train Best Threshold 0.50 → Balanced Acc: 0.6314, Acc: 0.6571, Sensitivity: 0.7097, Specificity: 0.5532, PPV: 0.7586, NPV: 0.4906, F1: 0.7333
+  Val Best Threshold 0.50 → Balanced Acc: 0.5322, Acc: 0.6286, Sensitivity: 0.7917, Specificity: 0.2727, PPV: 0.7037, NPV: 0.3750, F1: 0.7451
+Epoch 25/40 - Train Loss: 0.6789, Train Acc: 0.6643, Train AUC: 0.7435 - Val Loss: 0.6950, Val Acc (0.5): 0.6286, Val AUC: 0.5568
+  Train Best Threshold 0.50 → Balanced Acc: 0.6631, Acc: 0.6643, Sensitivity: 0.6667, Specificity: 0.6596, PPV: 0.7949, NPV: 0.5000, F1: 0.7251
+  Val Best Threshold 0.50 → Balanced Acc: 0.5568, Acc: 0.6286, Sensitivity: 0.7500, Specificity: 0.3636, PPV: 0.7200, NPV: 0.4000, F1: 0.7347
+Epoch 26/40 - Train Loss: 0.6861, Train Acc: 0.6714, Train AUC: 0.7058 - Val Loss: 0.6972, Val Acc (0.5): 0.5714, Val AUC: 0.5644
+  Train Best Threshold 0.50 → Balanced Acc: 0.6738, Acc: 0.6714, Sensitivity: 0.6667, Specificity: 0.6809, PPV: 0.8052, NPV: 0.5079, F1: 0.7294
+  Val Best Threshold 0.55 → Balanced Acc: 0.5795, Acc: 0.4571, Sensitivity: 0.2500, Specificity: 0.9091, PPV: 0.8571, NPV: 0.3571, F1: 0.3871
+Epoch 27/40 - Train Loss: 0.6830, Train Acc: 0.6786, Train AUC: 0.7001 - Val Loss: 0.6961, Val Acc (0.5): 0.5714, Val AUC: 0.5682
+  Train Best Threshold 0.50 → Balanced Acc: 0.6686, Acc: 0.6786, Sensitivity: 0.6989, Specificity: 0.6383, PPV: 0.7927, NPV: 0.5172, F1: 0.7429
+  Val Best Threshold 0.50 → Balanced Acc: 0.5152, Acc: 0.5714, Sensitivity: 0.6667, Specificity: 0.3636, PPV: 0.6957, NPV: 0.3333, F1: 0.6809
+Early stopping at epoch 27
+Loaded best model with validation AUC: 0.5947
+Final Train Results (Best Model) at epoch 19 - Loss: 0.6867, Accuracy: 0.6714, AUC: 0.7314
+Final Val Results (Best Model) at epoch 19 - Loss: 0.6956, Accuracy: 0.6286, AUC: 0.5947
+Train Best Threshold: 0.50 | Balanced Acc: 0.6685 | Acc: 0.6714 | Sensitivity: 0.6774 | Specificity: 0.6596 | PPV: 0.7975 | NPV: 0.5082 | F1: 0.7326
+Train Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[31 16]
+ [30 63]]
+Val Best Threshold: 0.55 | Balanced Acc: 0.5379 | Acc: 0.4000 | Sensitivity: 0.1667 | Specificity: 0.9091 | PPV: 0.8000 | NPV: 0.3333 | F1: 0.2759
+Val Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[10  1]
+ [20  4]]
+Fold 3 class distribution:
+  Train: Class 0=46 (32.9%), Class 1=94 (67.1%)
+  Val:   Class 0=12 (34.3%), Class 1=23 (65.7%)
+
+======================================================================
+Fold 3/5
+======================================================================
+Train: 140 patients
+Val: 35 patients
+Fitting clinical preprocessor on training data...
+Built clinical feature dictionaries: train=140, val=35
+Clinical input dimension: 5
+Backbone feature dimension: 1280
+Created mean pooling model with backbone efficientnetv2_b0
+Using device: cuda
+Class weights: [1.0, 0.4893617033958435]
+Weight decay (L2 reg): 0.0001
+Label smoothing: 0.1
+
+Epoch 1/40 - Train Loss: 0.7029, Train Acc: 0.5857, Train AUC: 0.5095 - Val Loss: 0.7128, Val Acc (0.5): 0.6571, Val AUC: 0.4819
+  Train Best Threshold 0.55 → Balanced Acc: 0.5213, Acc: 0.3571, Sensitivity: 0.0426, Specificity: 1.0000, PPV: 1.0000, NPV: 0.3382, F1: 0.0816
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+  → New best validation AUC: 0.4819
+Epoch 2/40 - Train Loss: 0.7029, Train Acc: 0.6214, Train AUC: 0.5056 - Val Loss: 0.7001, Val Acc (0.5): 0.3714, Val AUC: 0.3949
+  Train Best Threshold 0.50 → Balanced Acc: 0.5294, Acc: 0.6214, Sensitivity: 0.7979, Specificity: 0.2609, PPV: 0.6881, NPV: 0.3871, F1: 0.7389
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+Epoch 3/40 - Train Loss: 0.7040, Train Acc: 0.5571, Train AUC: 0.4910 - Val Loss: 0.6982, Val Acc (0.5): 0.3714, Val AUC: 0.3225
+  Train Best Threshold 0.55 → Balanced Acc: 0.5160, Acc: 0.3500, Sensitivity: 0.0319, Specificity: 1.0000, PPV: 1.0000, NPV: 0.3358, F1: 0.0619
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+Epoch 4/40 - Train Loss: 0.7028, Train Acc: 0.5500, Train AUC: 0.5051 - Val Loss: 0.6980, Val Acc (0.5): 0.3714, Val AUC: 0.2899
+  Train Best Threshold 0.55 → Balanced Acc: 0.5213, Acc: 0.3571, Sensitivity: 0.0426, Specificity: 1.0000, PPV: 1.0000, NPV: 0.3382, F1: 0.0816
+  Val Best Threshold 0.50 → Balanced Acc: 0.5018, Acc: 0.3714, Sensitivity: 0.0870, Specificity: 0.9167, PPV: 0.6667, NPV: 0.3438, F1: 0.1538
+Epoch 5/40 - Train Loss: 0.6988, Train Acc: 0.5500, Train AUC: 0.5821 - Val Loss: 0.6989, Val Acc (0.5): 0.4000, Val AUC: 0.2862
+  Train Best Threshold 0.55 → Balanced Acc: 0.5106, Acc: 0.3429, Sensitivity: 0.0213, Specificity: 1.0000, PPV: 1.0000, NPV: 0.3333, F1: 0.0417
+  Val Best Threshold 0.50 → Balanced Acc: 0.5236, Acc: 0.4000, Sensitivity: 0.1304, Specificity: 0.9167, PPV: 0.7500, NPV: 0.3548, F1: 0.2222
+Epoch 6/40 - Train Loss: 0.7044, Train Acc: 0.5786, Train AUC: 0.5007 - Val Loss: 0.6989, Val Acc (0.5): 0.4000, Val AUC: 0.2971
+  Train Best Threshold 0.50 → Balanced Acc: 0.5086, Acc: 0.5786, Sensitivity: 0.7128, Specificity: 0.3043, PPV: 0.6768, NPV: 0.3415, F1: 0.6943
+  Val Best Threshold 0.50 → Balanced Acc: 0.5236, Acc: 0.4000, Sensitivity: 0.1304, Specificity: 0.9167, PPV: 0.7500, NPV: 0.3548, F1: 0.2222
+Epoch 7/40 - Train Loss: 0.7039, Train Acc: 0.5286, Train AUC: 0.5021 - Val Loss: 0.6982, Val Acc (0.5): 0.3714, Val AUC: 0.3007
+  Train Best Threshold 0.50 → Balanced Acc: 0.5102, Acc: 0.5286, Sensitivity: 0.5638, Specificity: 0.4565, PPV: 0.6795, NPV: 0.3387, F1: 0.6163
+  Val Best Threshold 0.50 → Balanced Acc: 0.5018, Acc: 0.3714, Sensitivity: 0.0870, Specificity: 0.9167, PPV: 0.6667, NPV: 0.3438, F1: 0.1538
+Epoch 8/40 - Train Loss: 0.7044, Train Acc: 0.5071, Train AUC: 0.4866 - Val Loss: 0.6986, Val Acc (0.5): 0.4286, Val AUC: 0.3080
+  Train Best Threshold 0.55 → Balanced Acc: 0.5053, Acc: 0.3357, Sensitivity: 0.0106, Specificity: 1.0000, PPV: 1.0000, NPV: 0.3309, F1: 0.0211
+  Val Best Threshold 0.50 → Balanced Acc: 0.5453, Acc: 0.4286, Sensitivity: 0.1739, Specificity: 0.9167, PPV: 0.8000, NPV: 0.3667, F1: 0.2857
+Epoch 9/40 - Train Loss: 0.7076, Train Acc: 0.5286, Train AUC: 0.4482 - Val Loss: 0.6981, Val Acc (0.5): 0.4000, Val AUC: 0.3406
+  Train Best Threshold 0.55 → Balanced Acc: 0.5051, Acc: 0.3429, Sensitivity: 0.0319, Specificity: 0.9783, PPV: 0.7500, NPV: 0.3309, F1: 0.0612
+  Val Best Threshold 0.50 → Balanced Acc: 0.5236, Acc: 0.4000, Sensitivity: 0.1304, Specificity: 0.9167, PPV: 0.7500, NPV: 0.3548, F1: 0.2222
+Early stopping at epoch 9
+Loaded best model with validation AUC: 0.4819
+Final Train Results (Best Model) at epoch 1 - Loss: 0.7057, Accuracy: 0.6429, AUC: 0.4901
+Final Val Results (Best Model) at epoch 1 - Loss: 0.7128, Accuracy: 0.6571, AUC: 0.4819
+Train Best Threshold: 0.50 | Balanced Acc: 0.5009 | Acc: 0.6429 | Sensitivity: 0.9149 | Specificity: 0.0870 | PPV: 0.6719 | NPV: 0.3333 | F1: 0.7748
+Train Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[ 4 42]
+ [ 8 86]]
+Val Best Threshold: 0.05 | Balanced Acc: 0.5000 | Acc: 0.6571 | Sensitivity: 1.0000 | Specificity: 0.0000 | PPV: 0.6571 | NPV: 0.0000 | F1: 0.7931
+Val Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[ 0 12]
+ [ 0 23]]
+Fold 4 class distribution:
+  Train: Class 0=46 (32.9%), Class 1=94 (67.1%)
+  Val:   Class 0=12 (34.3%), Class 1=23 (65.7%)
+
+======================================================================
+Fold 4/5
+======================================================================
+Train: 140 patients
+Val: 35 patients
+Fitting clinical preprocessor on training data...
+Built clinical feature dictionaries: train=140, val=35
+Clinical input dimension: 5
+Backbone feature dimension: 1280
+Created mean pooling model with backbone efficientnetv2_b0
+Using device: cuda
+Class weights: [1.0, 0.4893617033958435]
+Weight decay (L2 reg): 0.0001
+Label smoothing: 0.1
+
+Epoch 1/40 - Train Loss: 0.7143, Train Acc: 0.4143, Train AUC: 0.3987 - Val Loss: 0.6920, Val Acc (0.5): 0.6286, Val AUC: 0.6993
+  Train Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6714, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6714, NPV: 0.0000, F1: 0.8034
+  Val Best Threshold 0.50 → Balanced Acc: 0.6178, Acc: 0.6286, Sensitivity: 0.6522, Specificity: 0.5833, PPV: 0.7500, NPV: 0.4667, F1: 0.6977
+  → New best validation AUC: 0.6993
+Epoch 2/40 - Train Loss: 0.7010, Train Acc: 0.5286, Train AUC: 0.5324 - Val Loss: 0.6946, Val Acc (0.5): 0.6000, Val AUC: 0.6413
+  Train Best Threshold 0.50 → Balanced Acc: 0.5268, Acc: 0.5286, Sensitivity: 0.5319, Specificity: 0.5217, PPV: 0.6944, NPV: 0.3529, F1: 0.6024
+  Val Best Threshold 0.50 → Balanced Acc: 0.5761, Acc: 0.6000, Sensitivity: 0.6522, Specificity: 0.5000, PPV: 0.7143, NPV: 0.4286, F1: 0.6818
+Epoch 3/40 - Train Loss: 0.6977, Train Acc: 0.5714, Train AUC: 0.5900 - Val Loss: 0.6918, Val Acc (0.5): 0.5714, Val AUC: 0.6268
+  Train Best Threshold 0.50 → Balanced Acc: 0.5920, Acc: 0.5714, Sensitivity: 0.5319, Specificity: 0.6522, PPV: 0.7576, NPV: 0.4054, F1: 0.6250
+  Val Best Threshold 0.50 → Balanced Acc: 0.6540, Acc: 0.5714, Sensitivity: 0.3913, Specificity: 0.9167, PPV: 0.9000, NPV: 0.4400, F1: 0.5455
+Epoch 4/40 - Train Loss: 0.7001, Train Acc: 0.5429, Train AUC: 0.5530 - Val Loss: 0.6887, Val Acc (0.5): 0.4571, Val AUC: 0.6232
+  Train Best Threshold 0.50 → Balanced Acc: 0.5708, Acc: 0.5429, Sensitivity: 0.4894, Specificity: 0.6522, PPV: 0.7419, NPV: 0.3846, F1: 0.5897
+  Val Best Threshold 0.50 → Balanced Acc: 0.5670, Acc: 0.4571, Sensitivity: 0.2174, Specificity: 0.9167, PPV: 0.8333, NPV: 0.3793, F1: 0.3448
+Epoch 5/40 - Train Loss: 0.7030, Train Acc: 0.4929, Train AUC: 0.4947 - Val Loss: 0.6860, Val Acc (0.5): 0.4571, Val AUC: 0.6558
+  Train Best Threshold 0.45 → Balanced Acc: 0.5164, Acc: 0.6786, Sensitivity: 0.9894, Specificity: 0.0435, PPV: 0.6788, NPV: 0.6667, F1: 0.8052
+  Val Best Threshold 0.50 → Balanced Acc: 0.5870, Acc: 0.4571, Sensitivity: 0.1739, Specificity: 1.0000, PPV: 1.0000, NPV: 0.3871, F1: 0.2963
+Epoch 6/40 - Train Loss: 0.6997, Train Acc: 0.5500, Train AUC: 0.5636 - Val Loss: 0.6845, Val Acc (0.5): 0.4000, Val AUC: 0.6739
+  Train Best Threshold 0.50 → Balanced Acc: 0.5761, Acc: 0.5500, Sensitivity: 0.5000, Specificity: 0.6522, PPV: 0.7460, NPV: 0.3896, F1: 0.5987
+  Val Best Threshold 0.50 → Balanced Acc: 0.5036, Acc: 0.4000, Sensitivity: 0.1739, Specificity: 0.8333, PPV: 0.6667, NPV: 0.3448, F1: 0.2759
+Epoch 7/40 - Train Loss: 0.6951, Train Acc: 0.5286, Train AUC: 0.6075 - Val Loss: 0.6838, Val Acc (0.5): 0.4000, Val AUC: 0.6703
+  Train Best Threshold 0.50 → Balanced Acc: 0.5712, Acc: 0.5286, Sensitivity: 0.4468, Specificity: 0.6957, PPV: 0.7500, NPV: 0.3810, F1: 0.5600
+  Val Best Threshold 0.50 → Balanced Acc: 0.5236, Acc: 0.4000, Sensitivity: 0.1304, Specificity: 0.9167, PPV: 0.7500, NPV: 0.3548, F1: 0.2222
+Epoch 8/40 - Train Loss: 0.6982, Train Acc: 0.5286, Train AUC: 0.5597 - Val Loss: 0.6839, Val Acc (0.5): 0.4000, Val AUC: 0.6739
+  Train Best Threshold 0.50 → Balanced Acc: 0.5379, Acc: 0.5286, Sensitivity: 0.5106, Specificity: 0.5652, PPV: 0.7059, NPV: 0.3611, F1: 0.5926
+  Val Best Threshold 0.50 → Balanced Acc: 0.5236, Acc: 0.4000, Sensitivity: 0.1304, Specificity: 0.9167, PPV: 0.7500, NPV: 0.3548, F1: 0.2222
+Epoch 9/40 - Train Loss: 0.6918, Train Acc: 0.5357, Train AUC: 0.6522 - Val Loss: 0.6830, Val Acc (0.5): 0.4571, Val AUC: 0.6703
+  Train Best Threshold 0.50 → Balanced Acc: 0.5543, Acc: 0.5357, Sensitivity: 0.5000, Specificity: 0.6087, PPV: 0.7231, NPV: 0.3733, F1: 0.5912
+  Val Best Threshold 0.50 → Balanced Acc: 0.5670, Acc: 0.4571, Sensitivity: 0.2174, Specificity: 0.9167, PPV: 0.8333, NPV: 0.3793, F1: 0.3448
+Early stopping at epoch 9
+Loaded best model with validation AUC: 0.6993
+Final Train Results (Best Model) at epoch 1 - Loss: 0.6996, Accuracy: 0.5357, AUC: 0.6115
+Final Val Results (Best Model) at epoch 1 - Loss: 0.6920, Accuracy: 0.6286, AUC: 0.6993
+Train Best Threshold: 0.50 | Balanced Acc: 0.5654 | Acc: 0.5357 | Sensitivity: 0.4787 | Specificity: 0.6522 | PPV: 0.7377 | NPV: 0.3797 | F1: 0.5806
+Train Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[30 16]
+ [49 45]]
+Val Best Threshold: 0.50 | Balanced Acc: 0.6178 | Acc: 0.6286 | Sensitivity: 0.6522 | Specificity: 0.5833 | PPV: 0.7500 | NPV: 0.4667 | F1: 0.6977
+Val Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[ 7  5]
+ [ 8 15]]
+Fold 5 class distribution:
+  Train: Class 0=46 (32.9%), Class 1=94 (67.1%)
+  Val:   Class 0=12 (34.3%), Class 1=23 (65.7%)
+
+======================================================================
+Fold 5/5
+======================================================================
+Train: 140 patients
+Val: 35 patients
+Fitting clinical preprocessor on training data...
+Built clinical feature dictionaries: train=140, val=35
+Clinical input dimension: 5
+Backbone feature dimension: 1280
+Created mean pooling model with backbone efficientnetv2_b0
+Using device: cuda
+Class weights: [1.0, 0.4893617033958435]
+Weight decay (L2 reg): 0.0001
+Label smoothing: 0.1
+
+Epoch 1/40 - Train Loss: 0.7061, Train Acc: 0.6714, Train AUC: 0.5039 - Val Loss: 0.7079, Val Acc (0.5): 0.5429, Val AUC: 0.3007
+  Train Best Threshold 0.50 → Balanced Acc: 0.5222, Acc: 0.6714, Sensitivity: 0.9574, Specificity: 0.0870, PPV: 0.6818, NPV: 0.5000, F1: 0.7965
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+  → New best validation AUC: 0.3007
+Epoch 2/40 - Train Loss: 0.7100, Train Acc: 0.6143, Train AUC: 0.4452 - Val Loss: 0.7038, Val Acc (0.5): 0.4286, Val AUC: 0.4239
+  Train Best Threshold 0.55 → Balanced Acc: 0.5093, Acc: 0.3857, Sensitivity: 0.1489, Specificity: 0.8696, PPV: 0.7000, NPV: 0.3333, F1: 0.2456
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+  → New best validation AUC: 0.4239
+Epoch 3/40 - Train Loss: 0.7080, Train Acc: 0.5786, Train AUC: 0.4732 - Val Loss: 0.7080, Val Acc (0.5): 0.5429, Val AUC: 0.4312
+  Train Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6714, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6714, NPV: 0.0000, F1: 0.8034
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+  → New best validation AUC: 0.4312
+Epoch 4/40 - Train Loss: 0.7029, Train Acc: 0.6571, Train AUC: 0.5481 - Val Loss: 0.7069, Val Acc (0.5): 0.4857, Val AUC: 0.3986
+  Train Best Threshold 0.50 → Balanced Acc: 0.5393, Acc: 0.6571, Sensitivity: 0.8830, Specificity: 0.1957, PPV: 0.6917, NPV: 0.4500, F1: 0.7757
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+Epoch 5/40 - Train Loss: 0.7036, Train Acc: 0.6643, Train AUC: 0.5590 - Val Loss: 0.7055, Val Acc (0.5): 0.5429, Val AUC: 0.4384
+  Train Best Threshold 0.50 → Balanced Acc: 0.5224, Acc: 0.6643, Sensitivity: 0.9362, Specificity: 0.1087, PPV: 0.6822, NPV: 0.4545, F1: 0.7892
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+  → New best validation AUC: 0.4384
+Epoch 6/40 - Train Loss: 0.7043, Train Acc: 0.6500, Train AUC: 0.5345 - Val Loss: 0.7047, Val Acc (0.5): 0.5429, Val AUC: 0.5000
+  Train Best Threshold 0.50 → Balanced Acc: 0.5340, Acc: 0.6500, Sensitivity: 0.8723, Specificity: 0.1957, PPV: 0.6891, NPV: 0.4286, F1: 0.7700
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+  → New best validation AUC: 0.5000
+Epoch 7/40 - Train Loss: 0.6996, Train Acc: 0.6714, Train AUC: 0.5967 - Val Loss: 0.7034, Val Acc (0.5): 0.6000, Val AUC: 0.5072
+  Train Best Threshold 0.50 → Balanced Acc: 0.5611, Acc: 0.6714, Sensitivity: 0.8830, Specificity: 0.2391, PPV: 0.7034, NPV: 0.5000, F1: 0.7830
+  Val Best Threshold 0.50 → Balanced Acc: 0.5163, Acc: 0.6000, Sensitivity: 0.7826, Specificity: 0.2500, PPV: 0.6667, NPV: 0.3750, F1: 0.7200
+  → New best validation AUC: 0.5072
+Epoch 8/40 - Train Loss: 0.7010, Train Acc: 0.6429, Train AUC: 0.5509 - Val Loss: 0.7020, Val Acc (0.5): 0.5429, Val AUC: 0.5072
+  Train Best Threshold 0.55 → Balanced Acc: 0.5315, Acc: 0.3857, Sensitivity: 0.1064, Specificity: 0.9565, PPV: 0.8333, NPV: 0.3438, F1: 0.1887
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+Epoch 9/40 - Train Loss: 0.6987, Train Acc: 0.6214, Train AUC: 0.5946 - Val Loss: 0.7019, Val Acc (0.5): 0.5143, Val AUC: 0.5145
+  Train Best Threshold 0.55 → Balanced Acc: 0.5365, Acc: 0.4000, Sensitivity: 0.1383, Specificity: 0.9348, PPV: 0.8125, NPV: 0.3468, F1: 0.2364
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+  → New best validation AUC: 0.5145
+Epoch 10/40 - Train Loss: 0.7023, Train Acc: 0.6429, Train AUC: 0.5349 - Val Loss: 0.7017, Val Acc (0.5): 0.4571, Val AUC: 0.4746
+  Train Best Threshold 0.50 → Balanced Acc: 0.5509, Acc: 0.6429, Sensitivity: 0.8191, Specificity: 0.2826, PPV: 0.7000, NPV: 0.4333, F1: 0.7549
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+Epoch 11/40 - Train Loss: 0.6995, Train Acc: 0.6357, Train AUC: 0.5747 - Val Loss: 0.6981, Val Acc (0.5): 0.4857, Val AUC: 0.5290
+  Train Best Threshold 0.50 → Balanced Acc: 0.5733, Acc: 0.6357, Sensitivity: 0.7553, Specificity: 0.3913, PPV: 0.7172, NPV: 0.4390, F1: 0.7358
+  Val Best Threshold 0.50 → Balanced Acc: 0.5290, Acc: 0.4857, Sensitivity: 0.3913, Specificity: 0.6667, PPV: 0.6923, NPV: 0.3636, F1: 0.5000
+  → New best validation AUC: 0.5290
+Epoch 12/40 - Train Loss: 0.7006, Train Acc: 0.6071, Train AUC: 0.5428 - Val Loss: 0.6992, Val Acc (0.5): 0.4571, Val AUC: 0.5580
+  Train Best Threshold 0.55 → Balanced Acc: 0.5532, Acc: 0.4000, Sensitivity: 0.1064, Specificity: 1.0000, PPV: 1.0000, NPV: 0.3538, F1: 0.1923
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+  → New best validation AUC: 0.5580
+Epoch 13/40 - Train Loss: 0.7001, Train Acc: 0.6214, Train AUC: 0.5754 - Val Loss: 0.6981, Val Acc (0.5): 0.5143, Val AUC: 0.5362
+  Train Best Threshold 0.55 → Balanced Acc: 0.5208, Acc: 0.3714, Sensitivity: 0.0851, Specificity: 0.9565, PPV: 0.8000, NPV: 0.3385, F1: 0.1538
+  Val Best Threshold 0.50 → Balanced Acc: 0.5707, Acc: 0.5143, Sensitivity: 0.3913, Specificity: 0.7500, PPV: 0.7500, NPV: 0.3913, F1: 0.5143
+Epoch 14/40 - Train Loss: 0.6975, Train Acc: 0.5929, Train AUC: 0.6064 - Val Loss: 0.6984, Val Acc (0.5): 0.4857, Val AUC: 0.5362
+  Train Best Threshold 0.50 → Balanced Acc: 0.5414, Acc: 0.5929, Sensitivity: 0.6915, Specificity: 0.3913, PPV: 0.6989, NPV: 0.3830, F1: 0.6952
+  Val Best Threshold 0.50 → Balanced Acc: 0.5290, Acc: 0.4857, Sensitivity: 0.3913, Specificity: 0.6667, PPV: 0.6923, NPV: 0.3636, F1: 0.5000
+Epoch 15/40 - Train Loss: 0.6951, Train Acc: 0.6286, Train AUC: 0.6452 - Val Loss: 0.6973, Val Acc (0.5): 0.4857, Val AUC: 0.5580
+  Train Best Threshold 0.50 → Balanced Acc: 0.5791, Acc: 0.6286, Sensitivity: 0.7234, Specificity: 0.4348, PPV: 0.7234, NPV: 0.4348, F1: 0.7234
+  Val Best Threshold 0.50 → Balanced Acc: 0.5489, Acc: 0.4857, Sensitivity: 0.3478, Specificity: 0.7500, PPV: 0.7273, NPV: 0.3750, F1: 0.4706
+Epoch 16/40 - Train Loss: 0.6968, Train Acc: 0.6357, Train AUC: 0.6265 - Val Loss: 0.6975, Val Acc (0.5): 0.4286, Val AUC: 0.5290
+  Train Best Threshold 0.50 → Balanced Acc: 0.5789, Acc: 0.6357, Sensitivity: 0.7447, Specificity: 0.4130, PPV: 0.7216, NPV: 0.4419, F1: 0.7330
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+Epoch 17/40 - Train Loss: 0.6932, Train Acc: 0.6429, Train AUC: 0.6459 - Val Loss: 0.6975, Val Acc (0.5): 0.4286, Val AUC: 0.5326
+  Train Best Threshold 0.50 → Balanced Acc: 0.6008, Acc: 0.6429, Sensitivity: 0.7234, Specificity: 0.4783, PPV: 0.7391, NPV: 0.4583, F1: 0.7312
+  Val Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Sensitivity: 1.0000, Specificity: 0.0000, PPV: 0.6571, NPV: 0.0000, F1: 0.7931
+Epoch 18/40 - Train Loss: 0.6964, Train Acc: 0.6143, Train AUC: 0.6159 - Val Loss: 0.6938, Val Acc (0.5): 0.5429, Val AUC: 0.5761
+  Train Best Threshold 0.50 → Balanced Acc: 0.5518, Acc: 0.6143, Sensitivity: 0.7340, Specificity: 0.3696, PPV: 0.7041, NPV: 0.4048, F1: 0.7188
+  Val Best Threshold 0.50 → Balanced Acc: 0.6522, Acc: 0.5429, Sensitivity: 0.3043, Specificity: 1.0000, PPV: 1.0000, NPV: 0.4286, F1: 0.4667
+  → New best validation AUC: 0.5761
+Epoch 19/40 - Train Loss: 0.6933, Train Acc: 0.6571, Train AUC: 0.6547 - Val Loss: 0.6933, Val Acc (0.5): 0.5429, Val AUC: 0.5870
+  Train Best Threshold 0.50 → Balanced Acc: 0.6170, Acc: 0.6571, Sensitivity: 0.7340, Specificity: 0.5000, PPV: 0.7500, NPV: 0.4792, F1: 0.7419
+  Val Best Threshold 0.50 → Balanced Acc: 0.6522, Acc: 0.5429, Sensitivity: 0.3043, Specificity: 1.0000, PPV: 1.0000, NPV: 0.4286, F1: 0.4667
+  → New best validation AUC: 0.5870
+Epoch 20/40 - Train Loss: 0.6901, Train Acc: 0.6929, Train AUC: 0.6970 - Val Loss: 0.6929, Val Acc (0.5): 0.5143, Val AUC: 0.5870
+  Train Best Threshold 0.50 → Balanced Acc: 0.6547, Acc: 0.6929, Sensitivity: 0.7660, Specificity: 0.5435, PPV: 0.7742, NPV: 0.5319, F1: 0.7701
+  Val Best Threshold 0.50 → Balanced Acc: 0.6304, Acc: 0.5143, Sensitivity: 0.2609, Specificity: 1.0000, PPV: 1.0000, NPV: 0.4138, F1: 0.4138
+Epoch 21/40 - Train Loss: 0.6950, Train Acc: 0.6214, Train AUC: 0.6136 - Val Loss: 0.6925, Val Acc (0.5): 0.5429, Val AUC: 0.5942
+  Train Best Threshold 0.50 → Balanced Acc: 0.5793, Acc: 0.6214, Sensitivity: 0.7021, Specificity: 0.4565, PPV: 0.7253, NPV: 0.4286, F1: 0.7135
+  Val Best Threshold 0.50 → Balanced Acc: 0.6522, Acc: 0.5429, Sensitivity: 0.3043, Specificity: 1.0000, PPV: 1.0000, NPV: 0.4286, F1: 0.4667
+  → New best validation AUC: 0.5942
+Epoch 22/40 - Train Loss: 0.6822, Train Acc: 0.7357, Train AUC: 0.7761 - Val Loss: 0.6936, Val Acc (0.5): 0.5429, Val AUC: 0.5761
+  Train Best Threshold 0.50 → Balanced Acc: 0.7144, Acc: 0.7357, Sensitivity: 0.7766, Specificity: 0.6522, PPV: 0.8202, NPV: 0.5882, F1: 0.7978
+  Val Best Threshold 0.50 → Balanced Acc: 0.6322, Acc: 0.5429, Sensitivity: 0.3478, Specificity: 0.9167, PPV: 0.8889, NPV: 0.4231, F1: 0.5000
+Epoch 23/40 - Train Loss: 0.6917, Train Acc: 0.6429, Train AUC: 0.6665 - Val Loss: 0.6930, Val Acc (0.5): 0.5429, Val AUC: 0.5906
+  Train Best Threshold 0.50 → Balanced Acc: 0.6175, Acc: 0.6429, Sensitivity: 0.6915, Specificity: 0.5435, PPV: 0.7558, NPV: 0.4630, F1: 0.7222
+  Val Best Threshold 0.50 → Balanced Acc: 0.6522, Acc: 0.5429, Sensitivity: 0.3043, Specificity: 1.0000, PPV: 1.0000, NPV: 0.4286, F1: 0.4667
+Epoch 24/40 - Train Loss: 0.6977, Train Acc: 0.6214, Train AUC: 0.5927 - Val Loss: 0.6933, Val Acc (0.5): 0.5429, Val AUC: 0.5725
+  Train Best Threshold 0.50 → Balanced Acc: 0.5849, Acc: 0.6214, Sensitivity: 0.6915, Specificity: 0.4783, PPV: 0.7303, NPV: 0.4314, F1: 0.7104
+  Val Best Threshold 0.50 → Balanced Acc: 0.6322, Acc: 0.5429, Sensitivity: 0.3478, Specificity: 0.9167, PPV: 0.8889, NPV: 0.4231, F1: 0.5000
+Epoch 25/40 - Train Loss: 0.6857, Train Acc: 0.7071, Train AUC: 0.7222 - Val Loss: 0.6934, Val Acc (0.5): 0.5429, Val AUC: 0.5725
+  Train Best Threshold 0.50 → Balanced Acc: 0.6820, Acc: 0.7071, Sensitivity: 0.7553, Specificity: 0.6087, PPV: 0.7978, NPV: 0.5490, F1: 0.7760
+  Val Best Threshold 0.50 → Balanced Acc: 0.6322, Acc: 0.5429, Sensitivity: 0.3478, Specificity: 0.9167, PPV: 0.8889, NPV: 0.4231, F1: 0.5000
+Epoch 26/40 - Train Loss: 0.6832, Train Acc: 0.7143, Train AUC: 0.7586 - Val Loss: 0.6935, Val Acc (0.5): 0.4857, Val AUC: 0.5652
+  Train Best Threshold 0.50 → Balanced Acc: 0.7040, Acc: 0.7143, Sensitivity: 0.7340, Specificity: 0.6739, PPV: 0.8214, NPV: 0.5536, F1: 0.7753
+  Val Best Threshold 0.50 → Balanced Acc: 0.5489, Acc: 0.4857, Sensitivity: 0.3478, Specificity: 0.7500, PPV: 0.7273, NPV: 0.3750, F1: 0.4706
+Epoch 27/40 - Train Loss: 0.6843, Train Acc: 0.6571, Train AUC: 0.7387 - Val Loss: 0.6912, Val Acc (0.5): 0.5429, Val AUC: 0.5761
+  Train Best Threshold 0.50 → Balanced Acc: 0.6559, Acc: 0.6571, Sensitivity: 0.6596, Specificity: 0.6522, PPV: 0.7949, NPV: 0.4839, F1: 0.7209
+  Val Best Threshold 0.50 → Balanced Acc: 0.6322, Acc: 0.5429, Sensitivity: 0.3478, Specificity: 0.9167, PPV: 0.8889, NPV: 0.4231, F1: 0.5000
+Epoch 28/40 - Train Loss: 0.6850, Train Acc: 0.7143, Train AUC: 0.7243 - Val Loss: 0.6919, Val Acc (0.5): 0.5429, Val AUC: 0.5652
+  Train Best Threshold 0.50 → Balanced Acc: 0.7040, Acc: 0.7143, Sensitivity: 0.7340, Specificity: 0.6739, PPV: 0.8214, NPV: 0.5536, F1: 0.7753
+  Val Best Threshold 0.50 → Balanced Acc: 0.6322, Acc: 0.5429, Sensitivity: 0.3478, Specificity: 0.9167, PPV: 0.8889, NPV: 0.4231, F1: 0.5000
+Epoch 29/40 - Train Loss: 0.6873, Train Acc: 0.6786, Train AUC: 0.7005 - Val Loss: 0.6904, Val Acc (0.5): 0.5429, Val AUC: 0.5797
+  Train Best Threshold 0.50 → Balanced Acc: 0.6552, Acc: 0.6786, Sensitivity: 0.7234, Specificity: 0.5870, PPV: 0.7816, NPV: 0.5094, F1: 0.7514
+  Val Best Threshold 0.50 → Balanced Acc: 0.6322, Acc: 0.5429, Sensitivity: 0.3478, Specificity: 0.9167, PPV: 0.8889, NPV: 0.4231, F1: 0.5000
+Early stopping at epoch 29
+Loaded best model with validation AUC: 0.5942
+Final Train Results (Best Model) at epoch 21 - Loss: 0.6897, Accuracy: 0.6714, AUC: 0.7070
+Final Val Results (Best Model) at epoch 21 - Loss: 0.6925, Accuracy: 0.5429, AUC: 0.5942
+Train Best Threshold: 0.50 | Balanced Acc: 0.6554 | Acc: 0.6714 | Sensitivity: 0.7021 | Specificity: 0.6087 | PPV: 0.7857 | NPV: 0.5000 | F1: 0.7416
+Train Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[28 18]
+ [28 66]]
+Val Best Threshold: 0.50 | Balanced Acc: 0.6522 | Acc: 0.5429 | Sensitivity: 0.3043 | Specificity: 1.0000 | PPV: 1.0000 | NPV: 0.4286 | F1: 0.4667
+Val Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[12  0]
+ [16  7]]
+
+======================================================================
+Cross-Validation Results - C1 (Mean Pooling)
+======================================================================
+Model: C1 (Mean Pooling)
+Backbone: efficientnetv2_b0
+Pooling: mean
+Val AUCs: ['0.7424', '0.5947', '0.4819', '0.6993', '0.5942']
+Mean Val AUC: 0.6225 ± 0.0912
+======================================================================

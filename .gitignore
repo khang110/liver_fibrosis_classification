@@ -66,9 +66,9 @@ data/entropy_full/
 # Results and outputs
 results/
 outputs/
-logs/
+
 checkpoints/
-*.log
+
 
 # CSV files (ignore generated splits and results, but keep labels.csv)
 *.csv
@@ -117,4 +117,5 @@ history.csv
 # Keep empty directories (optional - create .gitkeep files if needed)
 # !splits/.gitkeep
 data/*
+
 

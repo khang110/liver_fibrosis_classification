@@ -1,0 +1,29 @@
+Starting single train/val split training for A1 (Mean Pooling)
+Configuration:
+  clinical_csv: data/annotations/data1_175case_LB.csv
+  image_root: data/akagami_full_cropped
+  patient_id_column: NO
+  label_column: CL_F2
+  image_pattern: Nakagami_image_*.png
+  n_folds: 5
+  batch_size: 16
+  learning_rate: 0.001
+  num_epochs: 40
+  early_stopping_patience: 10
+  early_stopping_min_delta: 0.001
+  backbone: efficientnetv2_b0
+  pretrained: True
+  device: cuda
+  num_workers: 4
+  model_type: mean
+  attention_hidden: 128
+  seed: 42
+  no_cv: True
+  val_split: 0.2
+  log_dir: runs/bmode
+  use_advanced_aug: False
+  use_lr_scheduler: False
+  use_tta: False
+Loading clinical data...
+Loaded 175 patients from clinical data
+Building patient records...

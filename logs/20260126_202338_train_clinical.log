@@ -1,0 +1,81 @@
+Starting single train/val split training for C1 (Mean Pooling)
+Configuration:
+  clinical_csv: data/annotations/175_clinical_5_variables.csv
+  image_root: data/nakagami_full
+  patient_id_column: NO
+  label_column: CL_F2
+  image_pattern: Nakagami_image_*.png
+  n_folds: 5
+  batch_size: 16
+  learning_rate: 0.0001
+  num_epochs: 2
+  early_stopping_patience: 12
+  early_stopping_min_delta: 0.001
+  backbone: resnet18
+  pretrained: True
+  device: cuda
+  num_workers: 4
+  pooling: mean
+  attention_hidden: 128
+  clinical_dim: 32
+  fusion_hidden: 128
+  image_embedding_dim: 32
+  dropout: 0.3
+  clinical_features: ['AST', 'ALT', 'PLT', 'APRI', 'FIB_4']
+  seed: 42
+  no_cv: True
+  val_split: 0.2
+  weight_decay: 0.0
+  label_smoothing: 0.0
+  log_dir: runs/bmode_clinical
+Loading clinical data...
+Loaded 175 patients from clinical data
+Building patient records...
+Building patient records from 175 patients...
+Image root: data/nakagami_full
+Image pattern: Nakagami_image_*.png
+Successfully created 175 patient records
+Created 175 patient records
+Train/Val Split:
+  Train: 140 patients (80.0%)
+  Val:   35 patients (20.0%)
+====================Training single model====================
+Train: 140 patients
+Val: 35 patients
+Fitting clinical preprocessor on training data...
+Built clinical feature dictionaries: train=140, val=35
+Clinical input dimension: 5
+Backbone feature dimension: 512
+Created mean pooling model with backbone resnet18
+Using image bottleneck: 512 -> 32
+Using device: cuda
+Class weights: [1.0, 0.4893617033958435]
+
+Epoch 1/2 - Train Loss: 0.6992, Train Acc: 0.5857, Train AUC: 0.4371 - Val Loss: 0.6808, Val Acc (0.5): 0.6571, Val AUC: 0.4783
+  Train Best Threshold 0.55 → Balanced Acc: 0.5257, Acc: 0.3929, Sensitivity: 0.1383, Specificity: 0.9130, PPV: 0.7647, NPV: 0.3415, F1: 0.2342
+  Val Best Threshold 0.55 → Balanced Acc: 0.5435, Acc: 0.4000, Sensitivity: 0.0870, Specificity: 1.0000, PPV: 1.0000, NPV: 0.3636, F1: 0.1600
+  → New best validation AUC: 0.4783
+Epoch 2/2 - Train Loss: 0.6928, Train Acc: 0.6429, Train AUC: 0.5308 - Val Loss: 0.6736, Val Acc (0.5): 0.6571, Val AUC: 0.6884
+  Train Best Threshold 0.50 → Balanced Acc: 0.5398, Acc: 0.6429, Sensitivity: 0.8404, Specificity: 0.2391, PPV: 0.6930, NPV: 0.4231, F1: 0.7596
+  Val Best Threshold 0.55 → Balanced Acc: 0.5870, Acc: 0.4571, Sensitivity: 0.1739, Specificity: 1.0000, PPV: 1.0000, NPV: 0.3871, F1: 0.2963
+  → New best validation AUC: 0.6884
+Loaded best model with validation AUC: 0.6884
+Final Train Results (Best Model) at epoch 2 - Loss: 0.6828, Accuracy: 0.6714, AUC: 0.6820
+Final Val Results (Best Model) at epoch 2 - Loss: 0.6736, Accuracy: 0.6571, AUC: 0.6884
+Train Best Threshold: 0.55 | Balanced Acc: 0.5997 | Acc: 0.5071 | Sensitivity: 0.3298 | Specificity: 0.8696 | PPV: 0.8378 | NPV: 0.3883 | F1: 0.4733
+Train Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[40  6]
+ [63 31]]
+Val Best Threshold: 0.55 | Balanced Acc: 0.5870 | Acc: 0.4571 | Sensitivity: 0.1739 | Specificity: 1.0000 | PPV: 1.0000 | NPV: 0.3871 | F1: 0.2963
+Val Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[12  0]
+ [19  4]]
+======================================================================
+
+Training Results - C1 (Mean Pooling)
+======================================================================
+Model: C1 (Mean Pooling)
+Backbone: resnet18
+Pooling: mean
+Val AUC: 0.6884
+======================================================================

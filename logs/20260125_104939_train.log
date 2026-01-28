@@ -1,0 +1,220 @@
+Starting single train/val split training for A1 (Mean Pooling)
+Configuration:
+  clinical_csv: data/annotations/175_clinical_5_variables.csv
+  image_root: data/bmode_full
+  patient_id_column: NO
+  label_column: CL_F2
+  image_pattern: Nakagami_image_*.png
+  n_folds: 5
+  batch_size: 16
+  learning_rate: 0.001
+  num_epochs: 40
+  early_stopping_patience: 10
+  early_stopping_min_delta: 0.001
+  backbone: resnet18
+  pretrained: True
+  device: cuda
+  num_workers: 4
+  model_type: mean
+  attention_hidden: 128
+  seed: 42
+  no_cv: True
+  val_split: 0.2
+  log_dir: runs/bmode
+  use_advanced_aug: False
+  use_lr_scheduler: False
+  use_tta: False
+Loading clinical data...
+Loaded 175 patients from clinical data
+Building patient records...
+Building patient records from 175 patients...
+Image root: data/bmode_full
+Image pattern: Nakagami_image_*.png
+Patient 1: found 0 images, expected 3. Images: []
+Patient 4: found 0 images, expected 3. Images: []
+Patient 5: found 0 images, expected 3. Images: []
+Patient 6: found 0 images, expected 3. Images: []
+Patient 7: found 0 images, expected 3. Images: []
+Patient 8: found 0 images, expected 3. Images: []
+Patient 9: found 0 images, expected 3. Images: []
+Patient 11: found 0 images, expected 3. Images: []
+Patient 18: found 0 images, expected 3. Images: []
+Patient 24: found 0 images, expected 3. Images: []
+Patient 25: found 0 images, expected 3. Images: []
+Patient 26: found 0 images, expected 3. Images: []
+Patient 27: found 0 images, expected 3. Images: []
+Patient 29: found 0 images, expected 3. Images: []
+Patient 31: found 0 images, expected 3. Images: []
+Patient 32: found 0 images, expected 3. Images: []
+Patient 37: found 0 images, expected 3. Images: []
+Patient 38: found 0 images, expected 3. Images: []
+Patient 40: found 0 images, expected 3. Images: []
+Patient 43: found 0 images, expected 3. Images: []
+Patient 45: found 0 images, expected 3. Images: []
+Patient 46: found 0 images, expected 3. Images: []
+Patient 48: found 0 images, expected 3. Images: []
+Patient 49: found 0 images, expected 3. Images: []
+Patient 50: found 0 images, expected 3. Images: []
+Patient 51: found 0 images, expected 3. Images: []
+Patient 52: found 0 images, expected 3. Images: []
+Patient 53: found 0 images, expected 3. Images: []
+Patient 55: found 0 images, expected 3. Images: []
+Patient 57: found 0 images, expected 3. Images: []
+Patient 58: found 0 images, expected 3. Images: []
+Patient 60: found 0 images, expected 3. Images: []
+Patient 62: found 0 images, expected 3. Images: []
+Patient 63: found 0 images, expected 3. Images: []
+Patient 64: found 0 images, expected 3. Images: []
+Patient 65: found 0 images, expected 3. Images: []
+Patient 67: found 0 images, expected 3. Images: []
+Patient 68: found 0 images, expected 3. Images: []
+Patient 69: found 0 images, expected 3. Images: []
+Patient 73: found 0 images, expected 3. Images: []
+Patient 77: found 0 images, expected 3. Images: []
+Patient 78: found 0 images, expected 3. Images: []
+Patient 80: found 0 images, expected 3. Images: []
+Patient 81: found 0 images, expected 3. Images: []
+Patient 83: found 0 images, expected 3. Images: []
+Patient 85: found 0 images, expected 3. Images: []
+Patient 86: found 0 images, expected 3. Images: []
+Patient 87: found 0 images, expected 3. Images: []
+Patient 88: found 0 images, expected 3. Images: []
+Patient 89: found 0 images, expected 3. Images: []
+Patient 90: found 0 images, expected 3. Images: []
+Patient 91: found 0 images, expected 3. Images: []
+Patient 92: found 0 images, expected 3. Images: []
+Patient 93: found 0 images, expected 3. Images: []
+Patient 95: found 0 images, expected 3. Images: []
+Patient 96: found 0 images, expected 3. Images: []
+Patient 97: found 0 images, expected 3. Images: []
+Patient 98: found 0 images, expected 3. Images: []
+Patient 99: found 0 images, expected 3. Images: []
+Patient 100: found 0 images, expected 3. Images: []
+Patient 101: found 0 images, expected 3. Images: []
+Patient 102: found 0 images, expected 3. Images: []
+Patient 104: found 0 images, expected 3. Images: []
+Patient 105: found 0 images, expected 3. Images: []
+Patient 106: found 0 images, expected 3. Images: []
+Patient 107: found 0 images, expected 3. Images: []
+Patient 108: found 0 images, expected 3. Images: []
+Patient 110: found 0 images, expected 3. Images: []
+Patient 111: found 0 images, expected 3. Images: []
+Patient 112: found 0 images, expected 3. Images: []
+Patient 113: found 0 images, expected 3. Images: []
+Patient 114: found 0 images, expected 3. Images: []
+Patient 115: found 0 images, expected 3. Images: []
+Patient 118: found 0 images, expected 3. Images: []
+Patient 119: found 0 images, expected 3. Images: []
+Patient 122: found 0 images, expected 3. Images: []
+Patient 123: found 0 images, expected 3. Images: []
+Patient 126: found 0 images, expected 3. Images: []
+Patient 129: found 0 images, expected 3. Images: []
+Patient 132: found 0 images, expected 3. Images: []
+Patient 135: found 0 images, expected 3. Images: []
+Patient 137: found 0 images, expected 3. Images: []
+Patient 142: found 0 images, expected 3. Images: []
+Patient 144: found 0 images, expected 3. Images: []
+Patient 145: found 0 images, expected 3. Images: []
+Patient 146: found 0 images, expected 3. Images: []
+Patient 152: found 0 images, expected 3. Images: []
+Patient 153: found 0 images, expected 3. Images: []
+Patient 154: found 0 images, expected 3. Images: []
+Patient 157: found 0 images, expected 3. Images: []
+Patient 158: found 0 images, expected 3. Images: []
+Patient 162: found 0 images, expected 3. Images: []
+Patient 163: found 0 images, expected 3. Images: []
+Patient 164: found 0 images, expected 3. Images: []
+Patient 165: found 0 images, expected 3. Images: []
+Patient 166: found 0 images, expected 3. Images: []
+Patient 169: found 0 images, expected 3. Images: []
+Patient 173: found 0 images, expected 3. Images: []
+Patient 175: found 0 images, expected 3. Images: []
+Patient 177: found 0 images, expected 3. Images: []
+Patient 178: found 0 images, expected 3. Images: []
+Patient 180: found 0 images, expected 3. Images: []
+Patient 181: found 0 images, expected 3. Images: []
+Patient 185: found 0 images, expected 3. Images: []
+Patient 186: found 0 images, expected 3. Images: []
+Patient 191: found 0 images, expected 3. Images: []
+Patient 192: found 0 images, expected 3. Images: []
+Patient 197: found 0 images, expected 3. Images: []
+Patient 203: found 0 images, expected 3. Images: []
+Patient 204: found 0 images, expected 3. Images: []
+Patient 205: found 0 images, expected 3. Images: []
+Patient 206: found 0 images, expected 3. Images: []
+Patient 207: found 0 images, expected 3. Images: []
+Patient 210: found 0 images, expected 3. Images: []
+Patient 211: found 0 images, expected 3. Images: []
+Patient 215: found 0 images, expected 3. Images: []
+Patient 217: found 0 images, expected 3. Images: []
+Patient 218: found 0 images, expected 3. Images: []
+Patient 219: found 0 images, expected 3. Images: []
+Patient 220: found 0 images, expected 3. Images: []
+Patient 221: found 0 images, expected 3. Images: []
+Patient 223: found 0 images, expected 3. Images: []
+Patient 224: found 0 images, expected 3. Images: []
+Patient 226: found 0 images, expected 3. Images: []
+Patient 231: found 0 images, expected 3. Images: []
+Patient 232: found 0 images, expected 3. Images: []
+Patient 241: found 0 images, expected 3. Images: []
+Patient 244: found 0 images, expected 3. Images: []
+Patient 245: found 0 images, expected 3. Images: []
+Patient 250: found 0 images, expected 3. Images: []
+Patient 251: found 0 images, expected 3. Images: []
+Patient 253: found 0 images, expected 3. Images: []
+Patient 254: found 0 images, expected 3. Images: []
+Patient 255: found 0 images, expected 3. Images: []
+Patient 257: found 0 images, expected 3. Images: []
+Patient 258: found 0 images, expected 3. Images: []
+Patient 259: found 0 images, expected 3. Images: []
+Patient 260: found 0 images, expected 3. Images: []
+Patient 262: found 0 images, expected 3. Images: []
+Patient 263: found 0 images, expected 3. Images: []
+Patient 264: found 0 images, expected 3. Images: []
+Patient 268: found 0 images, expected 3. Images: []
+Patient 269: found 0 images, expected 3. Images: []
+Patient 272: found 0 images, expected 3. Images: []
+Patient 273: found 0 images, expected 3. Images: []
+Patient 274: found 0 images, expected 3. Images: []
+Patient 275: found 0 images, expected 3. Images: []
+Patient 276: found 0 images, expected 3. Images: []
+Patient 278: found 0 images, expected 3. Images: []
+Patient 280: found 0 images, expected 3. Images: []
+Patient 281: found 0 images, expected 3. Images: []
+Patient 283: found 0 images, expected 3. Images: []
+Patient 284: found 0 images, expected 3. Images: []
+Patient 287: found 0 images, expected 3. Images: []
+Patient 289: found 0 images, expected 3. Images: []
+Patient 292: found 0 images, expected 3. Images: []
+Patient 298: found 0 images, expected 3. Images: []
+Patient 299: found 0 images, expected 3. Images: []
+Patient 300: found 0 images, expected 3. Images: []
+Patient 301: found 0 images, expected 3. Images: []
+Patient 303: found 0 images, expected 3. Images: []
+Patient 304: found 0 images, expected 3. Images: []
+Patient 306: found 0 images, expected 3. Images: []
+Patient 307: found 0 images, expected 3. Images: []
+Patient 308: found 0 images, expected 3. Images: []
+Patient 310: found 0 images, expected 3. Images: []
+Patient 311: found 0 images, expected 3. Images: []
+Patient 312: found 0 images, expected 3. Images: []
+Patient 313: found 0 images, expected 3. Images: []
+Patient 319: found 0 images, expected 3. Images: []
+Patient 320: found 0 images, expected 3. Images: []
+Patient 324: found 0 images, expected 3. Images: []
+Patient 329: found 0 images, expected 3. Images: []
+Patient 331: found 0 images, expected 3. Images: []
+Patient 332: found 0 images, expected 3. Images: []
+Successfully created 0 patient records
+Wrong image count for 175 patients:
+  Patient 1: found 0, expected 3
+  Patient 4: found 0, expected 3
+  Patient 5: found 0, expected 3
+  Patient 6: found 0, expected 3
+  Patient 7: found 0, expected 3
+  Patient 8: found 0, expected 3
+  Patient 9: found 0, expected 3
+  Patient 11: found 0, expected 3
+  Patient 18: found 0, expected 3
+  Patient 24: found 0, expected 3
+... and 165 more

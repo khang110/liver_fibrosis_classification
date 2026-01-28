@@ -1,0 +1,161 @@
+Starting single train/val split training for A1 (Mean Pooling)
+Configuration:
+  clinical_csv: data/annotations/175_clinical_5_variables.csv
+  image_root: data/nakagami_full
+  patient_id_column: NO
+  label_column: CL_F2
+  image_pattern: Nakagami_image_*.png
+  n_folds: 5
+  batch_size: 16
+  learning_rate: 1e-05
+  num_epochs: 40
+  early_stopping_patience: 10
+  early_stopping_min_delta: 0.001
+  backbone: efficientnetv2_b0
+  pretrained: True
+  device: cuda
+  num_workers: 4
+  model_type: mean
+  attention_hidden: 128
+  seed: 42
+  no_cv: True
+  val_split: 0.2
+  log_dir: runs/bmode
+Loading clinical data...
+Loaded 175 patients from clinical data
+Building patient records...
+Building patient records from 175 patients...
+Image root: data/nakagami_full
+Image pattern: Nakagami_image_*.png
+Successfully created 175 patient records
+Created 175 patient records
+Train/Val Split:
+  Train: 140 patients (80.0%)
+  Val:   35 patients (20.0%)
+====================Training single model====================
+Train: 140 patients
+Val: 35 patients
+Created A1 model (mean pooling) with backbone efficientnetv2_b0
+Using device: cuda
+Class weights: [1.0, 0.4893617033958435]
+Epoch 1/40 - Train Loss: 0.6987, Train Acc: 0.3929, Train AUC: 0.4861 - Val Loss: 0.7086, Val Acc (0.5): 0.3714, Val AUC: 0.4203
+  Best Threshold 0.05 → Balanced Acc: 0.5000, Acc: 0.6571, Precision: 0.6571, Recall: 1.0000, F1: 0.7931
+  → New best validation AUC: 0.4203
+Epoch 2/40 - Train Loss: 0.6828, Train Acc: 0.4143, Train AUC: 0.6482 - Val Loss: 0.7104, Val Acc (0.5): 0.4286, Val AUC: 0.4819
+  Best Threshold 0.45 → Balanced Acc: 0.5815, Acc: 0.6857, Precision: 0.7000, Recall: 0.9130, F1: 0.7925
+  → New best validation AUC: 0.4819
+Epoch 3/40 - Train Loss: 0.6905, Train Acc: 0.4357, Train AUC: 0.5717 - Val Loss: 0.7186, Val Acc (0.5): 0.4286, Val AUC: 0.5254
+  Best Threshold 0.50 → Balanced Acc: 0.5652, Acc: 0.4286, Precision: 1.0000, Recall: 0.1304, F1: 0.2308
+  → New best validation AUC: 0.5254
+Epoch 4/40 - Train Loss: 0.6808, Train Acc: 0.4643, Train AUC: 0.6533 - Val Loss: 0.7163, Val Acc (0.5): 0.4286, Val AUC: 0.5435
+  Best Threshold 0.50 → Balanced Acc: 0.5652, Acc: 0.4286, Precision: 1.0000, Recall: 0.1304, F1: 0.2308
+  → New best validation AUC: 0.5435
+Epoch 5/40 - Train Loss: 0.6869, Train Acc: 0.4714, Train AUC: 0.5994 - Val Loss: 0.7143, Val Acc (0.5): 0.4571, Val AUC: 0.5797
+  Best Threshold 0.50 → Balanced Acc: 0.5870, Acc: 0.4571, Precision: 1.0000, Recall: 0.1739, F1: 0.2963
+  → New best validation AUC: 0.5797
+Epoch 6/40 - Train Loss: 0.6764, Train Acc: 0.5357, Train AUC: 0.6610 - Val Loss: 0.7115, Val Acc (0.5): 0.4857, Val AUC: 0.5942
+  Best Threshold 0.50 → Balanced Acc: 0.6087, Acc: 0.4857, Precision: 1.0000, Recall: 0.2174, F1: 0.3571
+  → New best validation AUC: 0.5942
+Epoch 7/40 - Train Loss: 0.6714, Train Acc: 0.5286, Train AUC: 0.6998 - Val Loss: 0.7120, Val Acc (0.5): 0.4857, Val AUC: 0.6341
+  Best Threshold 0.50 → Balanced Acc: 0.6087, Acc: 0.4857, Precision: 1.0000, Recall: 0.2174, F1: 0.3571
+  → New best validation AUC: 0.6341
+Epoch 8/40 - Train Loss: 0.6777, Train Acc: 0.5143, Train AUC: 0.6549 - Val Loss: 0.7122, Val Acc (0.5): 0.4857, Val AUC: 0.6558
+  Best Threshold 0.50 → Balanced Acc: 0.6087, Acc: 0.4857, Precision: 1.0000, Recall: 0.2174, F1: 0.3571
+  → New best validation AUC: 0.6558
+Epoch 9/40 - Train Loss: 0.6715, Train Acc: 0.5786, Train AUC: 0.6980 - Val Loss: 0.7098, Val Acc (0.5): 0.4857, Val AUC: 0.6739
+  Best Threshold 0.50 → Balanced Acc: 0.6087, Acc: 0.4857, Precision: 1.0000, Recall: 0.2174, F1: 0.3571
+  → New best validation AUC: 0.6739
+Epoch 10/40 - Train Loss: 0.6582, Train Acc: 0.6429, Train AUC: 0.7643 - Val Loss: 0.7015, Val Acc (0.5): 0.5143, Val AUC: 0.6993
+  Best Threshold 0.45 → Balanced Acc: 0.6395, Acc: 0.6571, Precision: 0.7619, Recall: 0.6957, F1: 0.7273
+  → New best validation AUC: 0.6993
+Epoch 11/40 - Train Loss: 0.6601, Train Acc: 0.6286, Train AUC: 0.7313 - Val Loss: 0.6956, Val Acc (0.5): 0.6286, Val AUC: 0.6957
+  Best Threshold 0.50 → Balanced Acc: 0.7174, Acc: 0.6286, Precision: 1.0000, Recall: 0.4348, F1: 0.6061
+Epoch 12/40 - Train Loss: 0.6547, Train Acc: 0.6714, Train AUC: 0.7613 - Val Loss: 0.6906, Val Acc (0.5): 0.6286, Val AUC: 0.7283
+  Best Threshold 0.50 → Balanced Acc: 0.6975, Acc: 0.6286, Precision: 0.9167, Recall: 0.4783, F1: 0.6286
+  → New best validation AUC: 0.7283
+Epoch 13/40 - Train Loss: 0.6443, Train Acc: 0.6786, Train AUC: 0.7972 - Val Loss: 0.6912, Val Acc (0.5): 0.6000, Val AUC: 0.7355
+  Best Threshold 0.50 → Balanced Acc: 0.6757, Acc: 0.6000, Precision: 0.9091, Recall: 0.4348, F1: 0.5882
+  → New best validation AUC: 0.7355
+Epoch 14/40 - Train Loss: 0.6451, Train Acc: 0.6643, Train AUC: 0.7858 - Val Loss: 0.6859, Val Acc (0.5): 0.6571, Val AUC: 0.7428
+  Best Threshold 0.50 → Balanced Acc: 0.7192, Acc: 0.6571, Precision: 0.9231, Recall: 0.5217, F1: 0.6667
+  → New best validation AUC: 0.7428
+Epoch 15/40 - Train Loss: 0.6310, Train Acc: 0.7071, Train AUC: 0.8138 - Val Loss: 0.6915, Val Acc (0.5): 0.5714, Val AUC: 0.7391
+  Best Threshold 0.45 → Balanced Acc: 0.6612, Acc: 0.6857, Precision: 0.7727, Recall: 0.7391, F1: 0.7556
+Epoch 16/40 - Train Loss: 0.6398, Train Acc: 0.6786, Train AUC: 0.7653 - Val Loss: 0.6893, Val Acc (0.5): 0.6000, Val AUC: 0.7536
+  Best Threshold 0.45 → Balanced Acc: 0.7029, Acc: 0.7143, Precision: 0.8095, Recall: 0.7391, F1: 0.7727
+  → New best validation AUC: 0.7536
+Epoch 17/40 - Train Loss: 0.6321, Train Acc: 0.6857, Train AUC: 0.7828 - Val Loss: 0.6850, Val Acc (0.5): 0.6571, Val AUC: 0.7536
+  Best Threshold 0.50 → Balanced Acc: 0.7192, Acc: 0.6571, Precision: 0.9231, Recall: 0.5217, F1: 0.6667
+Epoch 18/40 - Train Loss: 0.6305, Train Acc: 0.6786, Train AUC: 0.7949 - Val Loss: 0.6844, Val Acc (0.5): 0.6286, Val AUC: 0.7572
+  Best Threshold 0.45 → Balanced Acc: 0.7029, Acc: 0.7143, Precision: 0.8095, Recall: 0.7391, F1: 0.7727
+  → New best validation AUC: 0.7572
+Epoch 19/40 - Train Loss: 0.6272, Train Acc: 0.6857, Train AUC: 0.8000 - Val Loss: 0.6849, Val Acc (0.5): 0.6571, Val AUC: 0.7609
+  Best Threshold 0.50 → Balanced Acc: 0.7192, Acc: 0.6571, Precision: 0.9231, Recall: 0.5217, F1: 0.6667
+  → New best validation AUC: 0.7609
+Epoch 20/40 - Train Loss: 0.6174, Train Acc: 0.6857, Train AUC: 0.8284 - Val Loss: 0.6826, Val Acc (0.5): 0.6571, Val AUC: 0.7645
+  Best Threshold 0.50 → Balanced Acc: 0.7192, Acc: 0.6571, Precision: 0.9231, Recall: 0.5217, F1: 0.6667
+  → New best validation AUC: 0.7645
+Epoch 21/40 - Train Loss: 0.6217, Train Acc: 0.6571, Train AUC: 0.7981 - Val Loss: 0.6830, Val Acc (0.5): 0.6571, Val AUC: 0.7645
+  Best Threshold 0.50 → Balanced Acc: 0.7192, Acc: 0.6571, Precision: 0.9231, Recall: 0.5217, F1: 0.6667
+Epoch 22/40 - Train Loss: 0.6046, Train Acc: 0.6929, Train AUC: 0.8145 - Val Loss: 0.6785, Val Acc (0.5): 0.6571, Val AUC: 0.7645
+  Best Threshold 0.50 → Balanced Acc: 0.7192, Acc: 0.6571, Precision: 0.9231, Recall: 0.5217, F1: 0.6667
+Epoch 23/40 - Train Loss: 0.5928, Train Acc: 0.7714, Train AUC: 0.8522 - Val Loss: 0.6780, Val Acc (0.5): 0.6857, Val AUC: 0.7681
+  Best Threshold 0.50 → Balanced Acc: 0.7409, Acc: 0.6857, Precision: 0.9286, Recall: 0.5652, F1: 0.7027
+  → New best validation AUC: 0.7681
+Epoch 24/40 - Train Loss: 0.6047, Train Acc: 0.7429, Train AUC: 0.8099 - Val Loss: 0.6744, Val Acc (0.5): 0.6857, Val AUC: 0.7862
+  Best Threshold 0.50 → Balanced Acc: 0.7409, Acc: 0.6857, Precision: 0.9286, Recall: 0.5652, F1: 0.7027
+  → New best validation AUC: 0.7862
+Epoch 25/40 - Train Loss: 0.5996, Train Acc: 0.6643, Train AUC: 0.8115 - Val Loss: 0.6683, Val Acc (0.5): 0.6857, Val AUC: 0.7862
+  Best Threshold 0.50 → Balanced Acc: 0.7409, Acc: 0.6857, Precision: 0.9286, Recall: 0.5652, F1: 0.7027
+Epoch 26/40 - Train Loss: 0.5985, Train Acc: 0.6929, Train AUC: 0.7958 - Val Loss: 0.6637, Val Acc (0.5): 0.6571, Val AUC: 0.7862
+  Best Threshold 0.45 → Balanced Acc: 0.7029, Acc: 0.7143, Precision: 0.8095, Recall: 0.7391, F1: 0.7727
+Epoch 27/40 - Train Loss: 0.5868, Train Acc: 0.7357, Train AUC: 0.8194 - Val Loss: 0.6717, Val Acc (0.5): 0.6857, Val AUC: 0.7899
+  Best Threshold 0.45 → Balanced Acc: 0.7446, Acc: 0.7429, Precision: 0.8500, Recall: 0.7391, F1: 0.7907
+  → New best validation AUC: 0.7899
+Epoch 28/40 - Train Loss: 0.5718, Train Acc: 0.7429, Train AUC: 0.8300 - Val Loss: 0.6678, Val Acc (0.5): 0.6857, Val AUC: 0.8007
+  Best Threshold 0.45 → Balanced Acc: 0.7446, Acc: 0.7429, Precision: 0.8500, Recall: 0.7391, F1: 0.7907
+  → New best validation AUC: 0.8007
+Epoch 29/40 - Train Loss: 0.5760, Train Acc: 0.7143, Train AUC: 0.8307 - Val Loss: 0.6675, Val Acc (0.5): 0.6857, Val AUC: 0.8007
+  Best Threshold 0.45 → Balanced Acc: 0.7446, Acc: 0.7429, Precision: 0.8500, Recall: 0.7391, F1: 0.7907
+Epoch 30/40 - Train Loss: 0.5782, Train Acc: 0.6929, Train AUC: 0.8129 - Val Loss: 0.6547, Val Acc (0.5): 0.6571, Val AUC: 0.8080
+  Best Threshold 0.45 → Balanced Acc: 0.7446, Acc: 0.7429, Precision: 0.8500, Recall: 0.7391, F1: 0.7907
+  → New best validation AUC: 0.8080
+Epoch 31/40 - Train Loss: 0.5698, Train Acc: 0.7214, Train AUC: 0.8161 - Val Loss: 0.6507, Val Acc (0.5): 0.6857, Val AUC: 0.8116
+  Best Threshold 0.45 → Balanced Acc: 0.7446, Acc: 0.7429, Precision: 0.8500, Recall: 0.7391, F1: 0.7907
+  → New best validation AUC: 0.8116
+Epoch 32/40 - Train Loss: 0.5611, Train Acc: 0.7429, Train AUC: 0.8328 - Val Loss: 0.6499, Val Acc (0.5): 0.6857, Val AUC: 0.8116
+  Best Threshold 0.45 → Balanced Acc: 0.7663, Acc: 0.7714, Precision: 0.8571, Recall: 0.7826, F1: 0.8182
+Epoch 33/40 - Train Loss: 0.5500, Train Acc: 0.7500, Train AUC: 0.8342 - Val Loss: 0.6481, Val Acc (0.5): 0.6571, Val AUC: 0.8152
+  Best Threshold 0.45 → Balanced Acc: 0.7663, Acc: 0.7714, Precision: 0.8571, Recall: 0.7826, F1: 0.8182
+  → New best validation AUC: 0.8152
+Epoch 34/40 - Train Loss: 0.5519, Train Acc: 0.7714, Train AUC: 0.8492 - Val Loss: 0.6432, Val Acc (0.5): 0.6857, Val AUC: 0.8152
+  Best Threshold 0.45 → Balanced Acc: 0.7246, Acc: 0.7429, Precision: 0.8182, Recall: 0.7826, F1: 0.8000
+Epoch 35/40 - Train Loss: 0.5256, Train Acc: 0.7500, Train AUC: 0.8767 - Val Loss: 0.6403, Val Acc (0.5): 0.6857, Val AUC: 0.8188
+  Best Threshold 0.45 → Balanced Acc: 0.7246, Acc: 0.7429, Precision: 0.8182, Recall: 0.7826, F1: 0.8000
+  → New best validation AUC: 0.8188
+Epoch 36/40 - Train Loss: 0.5490, Train Acc: 0.7571, Train AUC: 0.8451 - Val Loss: 0.6388, Val Acc (0.5): 0.6857, Val AUC: 0.8297
+  Best Threshold 0.45 → Balanced Acc: 0.7663, Acc: 0.7714, Precision: 0.8571, Recall: 0.7826, F1: 0.8182
+  → New best validation AUC: 0.8297
+Epoch 37/40 - Train Loss: 0.5178, Train Acc: 0.7786, Train AUC: 0.8726 - Val Loss: 0.6406, Val Acc (0.5): 0.6857, Val AUC: 0.8225
+  Best Threshold 0.45 → Balanced Acc: 0.7663, Acc: 0.7714, Precision: 0.8571, Recall: 0.7826, F1: 0.8182
+Epoch 38/40 - Train Loss: 0.5129, Train Acc: 0.7714, Train AUC: 0.8691 - Val Loss: 0.6421, Val Acc (0.5): 0.6857, Val AUC: 0.8333
+  Best Threshold 0.45 → Balanced Acc: 0.7663, Acc: 0.7714, Precision: 0.8571, Recall: 0.7826, F1: 0.8182
+  → New best validation AUC: 0.8333
+Epoch 39/40 - Train Loss: 0.5052, Train Acc: 0.7929, Train AUC: 0.8908 - Val Loss: 0.6505, Val Acc (0.5): 0.6571, Val AUC: 0.8261
+  Best Threshold 0.40 → Balanced Acc: 0.7880, Acc: 0.8000, Precision: 0.8636, Recall: 0.8261, F1: 0.8444
+Epoch 40/40 - Train Loss: 0.4919, Train Acc: 0.8357, Train AUC: 0.9008 - Val Loss: 0.6534, Val Acc (0.5): 0.6571, Val AUC: 0.8261
+  Best Threshold 0.40 → Balanced Acc: 0.7464, Acc: 0.7714, Precision: 0.8261, Recall: 0.8261, F1: 0.8261
+Loaded best model with validation AUC: 0.8333
+Final Val Results (Best Model) at epoch 38 - Loss: 0.6421, Accuracy: 0.6857, AUC: 0.8333
+Best Threshold: 0.45 | Balanced Acc: 0.7663 | Acc: 0.7714 | Precision: 0.8571 | Recall: 0.7826 | F1: 0.8182
+Confusion Matrix at Best Threshold (rows=actual [0,1], cols=predicted [0,1]):
+[[ 9  3]
+ [ 5 18]]
+======================================================================
+
+Training Results - A1 (Mean Pooling)
+======================================================================
+Model: A1 (Mean Pooling)
+Backbone: efficientnetv2_b0
+Val AUC: 0.8333
+======================================================================
