@@ -187,6 +187,38 @@ def parse_args():
         help='Root directory for TensorBoard logs. Default: runs/bmode_clinical'
     )
     
+    parser.add_argument(
+        '--scheduler',
+        type=str,
+        choices=['plateau', 'step', 'none'],
+        default='none',
+        help='Scheduler type: "plateau" (ReduceLROnPlateau), "step" (StepLR), or "none". Default: none'
+    )
+    parser.add_argument(
+        '--scheduler_patience',
+        type=int,
+        default=5,
+        help='Patience for ReduceLROnPlateau. Default: 5'
+    )
+    parser.add_argument(
+        '--scheduler_factor',
+        type=float,
+        default=0.1,
+        help='Factor for ReduceLROnPlateau. Default: 0.1'
+    )
+    parser.add_argument(
+        '--scheduler_step_size',
+        type=int,
+        default=10,
+        help='Step size for StepLR. Default: 10'
+    )
+    parser.add_argument(
+        '--scheduler_gamma',
+        type=float,
+        default=0.1,
+        help='Gamma for StepLR. Default: 0.1'
+    )
+    
     return parser.parse_args()
 
 
@@ -204,7 +236,7 @@ def get_config(args):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
     config = {
-        'clinical_csv': Path("data/annotations/175_clinical_5_variables.csv"),
+        'clinical_csv': Path("data/annotations/data1_191case_LB_106caseFi_filter.csv"),
         'image_root': Path("data/nakagami_full"),
         'patient_id_column': "NO",
         'label_column': "CL_F2",
@@ -233,6 +265,11 @@ def get_config(args):
         'weight_decay': args.weight_decay,
         'label_smoothing': args.label_smoothing,
         'log_dir': Path(args.log_dir),
+        'scheduler': args.scheduler,
+        'scheduler_patience': args.scheduler_patience,
+        'scheduler_factor': args.scheduler_factor,
+        'scheduler_step_size': args.scheduler_step_size,
+        'scheduler_gamma': args.scheduler_gamma,
     }
     
     return config
@@ -718,6 +755,24 @@ def train(
         weight_decay=config['weight_decay']
     )
     
+    # Initialize scheduler
+    scheduler = None
+    if config['scheduler'] == 'plateau':
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode='max',
+            factor=config['scheduler_factor'],
+            patience=config['scheduler_patience']
+        )
+
+    elif config['scheduler'] == 'step':
+        scheduler = torch.optim.lr_scheduler.StepLR(
+            optimizer,
+            step_size=config['scheduler_step_size'],
+            gamma=config['scheduler_gamma']
+        )
+
+    
     logger.info(f"Using device: {device}")
     logger.info(f"Class weights: {class_weights.cpu().numpy().tolist()}")
     if config['weight_decay'] > 0:
@@ -772,6 +827,20 @@ def train(
                 f"NPV: {val_threshold_metrics['npv']:.4f}, "
                 f"F1: {val_threshold_metrics['f1']:.4f}"
             )
+        
+        # Scheduler step
+        current_lr = optimizer.param_groups[0]['lr']
+        if scheduler is not None:
+            if config['scheduler'] == 'plateau':
+                scheduler.step(val_auc)
+            elif config['scheduler'] == 'step':
+                scheduler.step()
+            
+            # Log new LR if changed (scheduler might have updated it)
+            new_lr = optimizer.param_groups[0]['lr']
+            if new_lr != current_lr:
+                logger.info(f"  LR updated from {current_lr:.2e} to {new_lr:.2e}")
+            current_lr = new_lr
 
         if writer is not None:
             step = epoch + 1
@@ -780,6 +849,7 @@ def train(
             writer.add_scalar('Accuracy/train', train_acc, step)
             writer.add_scalar('Accuracy/val_threshold_0.5', val_acc, step)
             writer.add_scalar('AUC/val', val_auc, step)
+            writer.add_scalar('LR/group0', current_lr, step)
             if train_auc is not None:
                 writer.add_scalar('AUC/train', train_auc, step)
             if train_threshold_metrics is not None:

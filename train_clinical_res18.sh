@@ -3,12 +3,12 @@ python train_clinical.py \
     --backbone resnet18 \
     --learning_rate 1e-5 \
     --num_epochs 50 \
-    --early_stopping_patience 15 \
+    --early_stopping_patience 12 \
     --device cuda \
     --num_workers 4 \
-    --clinical_dim 128 \
+    --clinical_dim 32 \
     --fusion_hidden 128 \
-    --dropout 0.5 \
+    --dropout 0.3 \
     --weight_decay 1e-4 \
     --label_smoothing 0.1 \
     --seed 42

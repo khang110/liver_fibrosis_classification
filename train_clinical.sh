@@ -2,16 +2,21 @@ python train_clinical.py \
     --pooling mean \
     --backbone efficientnetv2_b2 \
     --learning_rate 1e-5 \
-    --num_epochs 50 \
+    --num_epochs 60 \
     --early_stopping_patience 15 \
     --device cuda \
     --num_workers 4 \
-    --clinical_dim 128 \
+    --clinical_dim 256 \
     --fusion_hidden 128 \
     --dropout 0.5 \
     --weight_decay 1e-4 \
     --label_smoothing 0.1 \
-    --seed 42
+    --scheduler none \
+    --scheduler_patience 5 \
+    --scheduler_factor 0.1 \
+    --seed 42 \
+    --no_cv
+   
 
     # For Repeated Stratified K-Fold CV (recommended for robustness):
     # --n_repeats 3  # This will run 5 folds x 3 repeats = 15 total folds
